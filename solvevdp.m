@@ -1,5 +1,7 @@
+% A. Raghavendra Kaushik - 18ME31003
 function project
-    tspan = [0 1000];
+    % tspan = [0 1000]; % for phase plane 
+    tspan = [0 50] % for plotting indvidual solutions, so that figure isn't clumsy
     y0 = [1 0];
 
     disp('mu = 0.1')
@@ -22,15 +24,15 @@ function project
     % plotting y(t)
     figure(1)
         subplot(1,3,1)
-        plot(t,v(:,1))
+        plot(t,v(:,1),t,v(:,2))
         title('mu=0.1')
 
         subplot(1,3,2)
-        plot(t1,v1(:,1))
+        plot(t1,v1(:,1),t1,v1(:,2))
         title('mu=1')
 
         subplot(1,3,3)
-        plot(t2,v2(:,1))
+        plot(t2,v2(:,1),t2,v2(:,2))
         title('mu=100')
     grid
 
@@ -46,7 +48,7 @@ function project
         title('mu=1')
 
         subplot(1,3,3)
-        plot(v2(:,1),v2(:,2))
+        plot(v2s(:,1),v2s(:,2))
         title('mu=100')
     grid
 
