@@ -1,7 +1,7 @@
 % A. Raghavendra Kaushik - 18ME31003
 function project
-    % tspan = [0 1000]; % for phase plane 
-    tspan = [0 50] % for plotting indvidual solutions, so that figure isn't clumsy
+    % tspan = [0 1000]; % for phase plane and time comparison
+    tspan = [0 50]; % for plotting indvidual solutions, so that figure isn't clumsy
     y0 = [1 0];
 
     disp('mu = 0.1')
