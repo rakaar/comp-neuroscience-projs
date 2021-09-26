@@ -50,9 +50,8 @@ function project
         tau_w = 1./cosh((v_quiver-v3)/(2*v4));
         dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)));
         dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
-        quiver_plot = quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 'color',[0 0 0]);
-        set(quiver_plot,'AutoScale','on', 'AutoScaleFactor', 2) % increase size of arrows
-
+        quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 2, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+        
     hold off
 
 end
