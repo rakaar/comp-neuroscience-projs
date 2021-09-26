@@ -30,8 +30,8 @@ function project
         
         v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
 
-        plot(v, w_null_cline)
-        plot(v, v_null_cline)
+        plot(v, 100*w_null_cline)
+        plot(v, 100*v_null_cline)
 
       
         % finding point of intersection
@@ -43,6 +43,17 @@ function project
                fprintf("v_eq,w_eq %.3f, %.3f \n", v(cnt), s1)
             end
         end
+        
+        [v_quiver,w_quiver] = meshgrid(linspace(-80,80,30), linspace(0,1,30));
+        m_infinity_v_quiver = 0.5 * ( 1 + tanh((v_quiver-v1)/(v2)) ); 
+
+        tau_w = 1./cosh((v_quiver-v3)/(2*v4));
+        dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)));
+        dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
+        quiver_plot = quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 'color',[0 0 0]);
+        set(quiver_plot,'AutoScale','on', 'AutoScaleFactor', 2) % increase size of arrows
 
     hold off
+
 end
+
