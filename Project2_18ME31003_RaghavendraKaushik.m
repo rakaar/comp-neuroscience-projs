@@ -41,6 +41,8 @@ function project
             zz = abs(s1-s2);
             if zz <= 0.01
                fprintf("v_eq,w_eq %.3f, %.3f \n", v(cnt), s1)
+               v_eq = v(cnt)
+               w_eq = s1
             end
         end
         
@@ -50,8 +52,25 @@ function project
         tau_w = 1./cosh((v_quiver-v3)/(2*v4));
         dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)));
         dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
-        quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 2, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+        quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 7, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
         
+        % defininf dv/dt and dw/dt again because this time we want expressions not vectors for the jacobian
+        % dv/dt and dw_dt are functions of (v_var, w_var)
+        syms v_var w_var
+        dv_dt2 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var-v1)/(v2)) ))*(v_var-v_ca) )) + (-g_k * ( w_var*(v_var-v_k) )) + (-g_l * (v_var - v_l)));
+        dw_dt2 = phi * (0.5 * ( 1 + tanh((v_var-v3)/(v4)) ) - w_var)/(1/cosh((v_var-v3)/(2*v4)));
+        
+        df1_dv = diff(dv_dt2, v_var);
+        df1_dw = diff(dv_dt2, w_var);
+        df2_dv = diff(dw_dt2, v_var);
+        df2_dw = diff(dw_dt2, w_var);
+
+        
+        % jacobian matrix
+        jacobian = [subs(df1_dv,{v_var,w_var},{v_eq, w_eq}) subs(df1_dw,{v_var,w_var},{v_eq, w_eq}); subs(df2_dv,{v_var,w_var},{v_eq, w_eq}) subs(df2_dw,{v_var,w_var},{v_eq, w_eq})  ]
+        eigen_values = double(eig(jacobian))
+
+
     hold off
 
 end
