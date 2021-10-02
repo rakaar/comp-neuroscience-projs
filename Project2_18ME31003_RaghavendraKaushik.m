@@ -84,7 +84,7 @@ function project
         jacobian = [subs(df1_dv,{v_var,w_var},{v_eq, w_eq}) subs(df1_dw,{v_var,w_var},{v_eq, w_eq}); subs(df2_dv,{v_var,w_var},{v_eq, w_eq}) subs(df2_dw,{v_var,w_var},{v_eq, w_eq})  ];
         eigen_values = double(eig(jacobian)) % we see that eigen values are negative, implying that equilibrium point is a stable point
         
-        [t,r] = ode15s(@mle_diff_eqn,[0 50000],[v_eq w_eq])
+        [t,r] = ode15s(@mle_diff_eqn,[0 50000],[x(1) x(2)])
         plot(r(:,1),r(:,2))
 
     hold off
