@@ -148,7 +148,50 @@ function project
         hold off
 
         plot(v_initial, v_max)
+    grid
 
+    % with steady external currents
+    figure(5)
+        hold on
+            [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1) x(2)]); % equilibrium point, iext = 0
+            plot1 = plot(r(:,1), r(:,2)) %nothing happens as we are at the equilibrium point
+
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 300],[x(1) x(2)]); % equilibrium point, iext = 86
+            plot2 = plot(r(:,1), r(:,2)) % we get a limit cycle, we are starting from a point far from new equilibrium point, so can't predict via linearisation, derivates play the role
+
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 500],[-27.9, 0.17]); % non-equilibirum point, iext = 86
+            plot3 = plot(r(:,1), r(:,2)) % we get a inward spiral, we are starting a point near new equilbirium point. And jacobian eigen values given complex with real part -ve, which confirms inward spiral
+
+            legend([plot1, plot2, plot3], ["equilibrium pt, iext = 0", "equilibrium point, iext = 86", "non-equilibirum point, iext = 86"]);
+        hold off
+
+        
+        % Calculations verifying the plots - finding new equilibrium point, its jacobian's eigen values to know its kind
+        % estimating the point of intersection with iext = 86
+        F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 86);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+        starting_pt = [-27; 0.10];
+        options = optimoptions('fsolve','Display','iter');
+        [x,fval] = fsolve(F,starting_pt,options)
+        disp("Equilibrium pt with iext = 86")
+        disp(x) % -27.9524, 0.1195
+        v_eq3 = x(1)
+        w_eq3 = x(2)
+
+        % finding jacobian values
+        syms v_var3 w_var3
+        dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + 86);
+        dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+        
+        df1_dv3 = diff(dv_dt3, v_var3);
+        df1_dw3 = diff(dv_dt3, w_var3);
+        df2_dv3 = diff(dw_dt3, v_var3);
+        df2_dw3 = diff(dw_dt3, w_var3);
+
+        % jacobian matrix and their eigen values
+        jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+        eigen_values3 = double(eig(jacobian3)) % we see that eigen values are negative, implying that equilibrium point is a stable point
+        % eigen values are complex, with real part negative => inward spiral
+        % we get that inward spiral when we start near the equilibrium pt -27.9,0.17
     grid
 end
 
@@ -175,6 +218,28 @@ function result = mle_diff_eqn(t,r)
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
 
+function result = mle_diff_eqn_with_i_ext_steady(t,r)
+
+    % defining first set of MLE variables
+    g_ca = 4.4;
+    g_k = 8;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.02;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 2;
+    v4 = 30;
+    v5 = 2;
+    v6 = 30;
+    c = 20;
+
+    result = zeros(2,1);
+    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 86);
+    result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+end
 function result = mle_diff_eqn2(t,r)
 
     % defining first set of MLE variables, a different phi
