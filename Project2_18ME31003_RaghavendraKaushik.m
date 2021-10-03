@@ -20,7 +20,7 @@ function project
     c = 20;
     
     
-    
+    figure(1)
     % plotting null-clines,finding equilibrium points and their nature, quiver plots
     hold on
         % w null-cline dw/dt = 0, w = f(v)
@@ -83,11 +83,26 @@ function project
         jacobian = [subs(df1_dv,{v_var,w_var},{v_eq, w_eq}) subs(df1_dw,{v_var,w_var},{v_eq, w_eq}); subs(df2_dv,{v_var,w_var},{v_eq, w_eq}) subs(df2_dw,{v_var,w_var},{v_eq, w_eq})  ];
         eigen_values = double(eig(jacobian)) % we see that eigen values are negative, implying that equilibrium point is a stable point
         
-        % running the equation from Equilibrium point
-        [t,r] = ode15s(@mle_diff_eqn,[0 50000],[x(1) x(2)])
-        plot(r(:,1),r(:,2))
+        % running the equation from Equilibrium point, it stays there
+        [t,r] = ode15s(@mle_diff_eqn,[0 100],[x(1) x(2)])
+        plot(r(:,1),100*r(:,2))
 
     hold off
+    grid
+
+    figure(2)
+        hold on
+        [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)])
+        plot(r1(:,1),r1(:,2))
+
+        [t,r] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+100 x(2)])
+        plot(r(:,1), r(:,2))
+
+        % phi = 0.04
+        % phi = 0.01
+        hold off
+    grid
+
 
 end
 
