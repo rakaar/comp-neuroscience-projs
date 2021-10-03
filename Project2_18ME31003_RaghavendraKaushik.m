@@ -98,20 +98,20 @@ function project
         
 
         % [t1,r1] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.04
-%         % plot5 = plot(r1(:,1),r1(:,2))
+        % plot5 = plot(r1(:,1),r1(:,2))
 
         
 
         % [t1,r1] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.01
         % plot6 = plot(r1(:,1),r1(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.01
+        [t,r] = ode15s(@mle_diff_eqn3,[0 300],[x(1)+100 x(2)]) % supra threshold, phi = 0.01
         plot1 = plot(r(:,1), r(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.02
+        [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+100 x(2)]) % supra threshold, phi = 0.02
         plot2 = plot(r(:,1), r(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.04
+        [t,r] = ode15s(@mle_diff_eqn2,[0 300],[x(1)+100 x(2)]) % supra threshold, phi = 0.04
         plot3 = plot(r(:,1), r(:,2))
 
         legend([plot1, plot2, plot3], ["AP phi=0.01", "AP phi=0.02", "AP phi = 0.04"])
@@ -119,6 +119,19 @@ function project
         hold off
     grid
 
+    figure(3)
+        hold on
+            plots_depoloraization = []
+            labels = []
+
+            for step_size = 40:1:50
+                [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+step_size x(2)])
+                plots_depoloraization = [plots_depoloraization, plot(r(:,1), r(:,2))]
+                labels = [labels, strcat("V initial=",string(x(1) + step_size))]
+            end
+            legend(plots_depoloraization, labels)
+        hold off
+    grid
 
 end
 
