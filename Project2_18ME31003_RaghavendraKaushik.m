@@ -193,6 +193,25 @@ function project
         % eigen values are complex, with real part negative => inward spiral
         % we get that inward spiral when we start near the equilibrium pt -27.9,0.17
     grid
+
+   
+    figure(6)
+        hold on
+             % plot for null clines with iext = 86
+            % w null-cline dw/dt = 0, w = f(v)
+            w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
+                
+            % v null cline, dv/dt = 0, w = f(v)
+            m_infinity_v = 0.5 * ( 1 + tanh((v-v1)/(v2)) ); 
+            denominator_v_null_cline = g_k * (v - v_k);
+            numerator_v_null_cline = -g_ca * ( m_infinity_v.* (v-v_ca) ) - g_l * (v-v_l) + 86;
+            
+            v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
+
+            plot(v, 100*w_null_cline)
+            plot(v, 100*v_null_cline)
+        hold off
+    grid
 end
 
 function result = mle_diff_eqn(t,r)
