@@ -92,25 +92,29 @@ function project
 
     figure(2)
         hold on
-        [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.02
-        plot1 = plot(r1(:,1),r1(:,2))
+        % [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.02
+        % plot4 = plot(r1(:,1),r1(:,2))
+
+        
+
+        % [t1,r1] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.04
+%         % plot5 = plot(r1(:,1),r1(:,2))
+
+        
+
+        % [t1,r1] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.01
+        % plot6 = plot(r1(:,1),r1(:,2))
+
+        [t,r] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.01
+        plot1 = plot(r(:,1), r(:,2))
 
         [t,r] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.02
         plot2 = plot(r(:,1), r(:,2))
 
-        [t1,r1] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.04
-        plot3 = plot(r1(:,1),r1(:,2))
-
         [t,r] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.04
-        plot4 = plot(r(:,1), r(:,2))
+        plot3 = plot(r(:,1), r(:,2))
 
-        [t1,r1] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.01
-        plot5 = plot(r1(:,1),r1(:,2))
-
-        [t,r] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.01
-        plot6 = plot(r(:,1), r(:,2))
-
-        legend([plot1, plot2, plot3, plot4, plot5, plot6], ["sub Threshold,phi=0.02","supra Threshold,phi=0.02", "sub Threshold,phi=0.04", "supra Threshold,phi=0.04", "sub threshold, phi=0.01", "supra threshold, phi=0.01"])
+        legend([plot1, plot2, plot3], ["AP phi=0.01", "AP phi=0.02", "AP phi = 0.04"])
        
         hold off
     grid
