@@ -92,14 +92,26 @@ function project
 
     figure(2)
         hold on
-        [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)])
-        plot(r1(:,1),r1(:,2))
+        [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.02
+        plot1 = plot(r1(:,1),r1(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+100 x(2)])
-        plot(r(:,1), r(:,2))
+        [t,r] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.02
+        plot2 = plot(r(:,1), r(:,2))
 
-        % phi = 0.04
-        % phi = 0.01
+        [t1,r1] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.04
+        plot3 = plot(r1(:,1),r1(:,2))
+
+        [t,r] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.04
+        plot4 = plot(r(:,1), r(:,2))
+
+        [t1,r1] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.01
+        plot5 = plot(r1(:,1),r1(:,2))
+
+        [t,r] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+100 x(2)]) % supra threshold, phi = 0.01
+        plot6 = plot(r(:,1), r(:,2))
+
+        legend([plot1, plot2, plot3, plot4, plot5, plot6], ["sub Threshold,phi=0.02","supra Threshold,phi=0.02", "sub Threshold,phi=0.04", "supra Threshold,phi=0.04", "sub threshold, phi=0.01", "supra threshold, phi=0.01"])
+       
         hold off
     grid
 
@@ -116,6 +128,52 @@ function result = mle_diff_eqn(t,r)
     v_k = -84;
     v_l = -60;
     phi = 0.02;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 2;
+    v4 = 30;
+    v5 = 2;
+    v6 = 30;
+    c = 20;
+
+    result = zeros(2,1);
+    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)));
+    result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+end
+
+function result = mle_diff_eqn2(t,r)
+
+    % defining first set of MLE variables, a different phi
+    g_ca = 4.4;
+    g_k = 8;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.04;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 2;
+    v4 = 30;
+    v5 = 2;
+    v6 = 30;
+    c = 20;
+
+    result = zeros(2,1);
+    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)));
+    result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+end
+
+function result = mle_diff_eqn3(t,r)
+
+    % defining first set of MLE variables, a different phi
+    g_ca = 4.4;
+    g_k = 8;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.01;
     v1 = -1.2;
     v2 = 18;
     v3 = 2;
