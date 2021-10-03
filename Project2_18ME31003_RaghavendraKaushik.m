@@ -90,6 +90,7 @@ function project
     hold off
     grid
 
+    % plotting for different values of phi
     figure(2)
         hold on
         % [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.02
@@ -105,34 +106,50 @@ function project
         % [t1,r1] = ode15s(@mle_diff_eqn3,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.01
         % plot6 = plot(r1(:,1),r1(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn3,[0 300],[x(1)+100 x(2)]) % supra threshold, phi = 0.01
+        [t,r] = ode15s(@mle_diff_eqn3,[0 300],[x(1)+100 x(2)]); % supra threshold, phi = 0.01
         plot1 = plot(r(:,1), r(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+100 x(2)]) % supra threshold, phi = 0.02
+        [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+100 x(2)]); % supra threshold, phi = 0.02
         plot2 = plot(r(:,1), r(:,2))
 
-        [t,r] = ode15s(@mle_diff_eqn2,[0 300],[x(1)+100 x(2)]) % supra threshold, phi = 0.04
-        plot3 = plot(r(:,1), r(:,2))
+        [t,r] = ode15s(@mle_diff_eqn2,[0 300],[x(1)+100 x(2)]); % supra threshold, phi = 0.04
+        plot3 = plot(r(:,1), r(:,2));
 
-        legend([plot1, plot2, plot3], ["AP phi=0.01", "AP phi=0.02", "AP phi = 0.04"])
+        legend([plot1, plot2, plot3], ["AP phi=0.01", "AP phi=0.02", "AP phi = 0.04"]);
        
         hold off
     grid
 
+    % plotting for different values of V_initial to see sub and supra thresholds
     figure(3)
         hold on
-            plots_depoloraization = []
-            labels = []
+            plots_depoloraization = [];
+            labels = [];
 
             for step_size = 40:1:50
-                [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+step_size x(2)])
-                plots_depoloraization = [plots_depoloraization, plot(r(:,1), r(:,2))]
-                labels = [labels, strcat("V initial=",string(x(1) + step_size))]
+                [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+step_size x(2)]);
+                plots_depoloraization = [plots_depoloraization, plot(r(:,1), r(:,2))];
+                labels = [labels, strcat("V initial=",string(x(1) + step_size))];
             end
             legend(plots_depoloraization, labels)
         hold off
     grid
 
+    % V max vs V initial
+    figure(4)
+        hold on
+            v_initial = [];
+            v_max = [];
+            for step_size = 45:0.01:46
+                [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+step_size x(2)]);
+                v_initial = [v_initial, x(1)+step_size];
+                v_max = [v_max, max(r(:,1))];
+            end
+        hold off
+
+        plot(v_initial, v_max)
+
+    grid
 end
 
 function result = mle_diff_eqn(t,r)
