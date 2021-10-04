@@ -214,6 +214,69 @@ function project
             plot(v, 100*v_null_cline)
         hold off
     grid
+
+
+    % other all i currents comparison
+    iext = [80, 86, 90]
+    for i=1:3
+        disp("for i ext is ")
+        disp(iext(i))
+        F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + iext(i));  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+        starting_pt = [-27; 0.10];
+        options = optimoptions('fsolve','Display','iter');
+        [x,fval] = fsolve(F,starting_pt,options)
+        disp(x) % -27.9524, 0.1195
+        v_eq3 = x(1)
+        w_eq3 = x(2)
+
+        % finding jacobian values
+        syms v_var3 w_var3
+        dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + iext(i));
+        dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+        
+        df1_dv3 = diff(dv_dt3, v_var3);
+        df1_dw3 = diff(dv_dt3, w_var3);
+        df2_dv3 = diff(dw_dt3, v_var3);
+        df2_dw3 = diff(dw_dt3, w_var3);
+
+        % jacobian matrix and their eigen values
+        jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+        eigen_values3 = double(eig(jacobian3)) 
+    end
+
+    % -------------------------------------------------- Different set of MLE variables ------------------------------------------
+    g_ca = 4;
+    g_k = 8.0;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.0667;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 12;
+    v4 = 17.4;
+    v5 = 12;
+    v6 = 17.4;
+    c = 20;
+
+    % w null-cline dw/dt = 0, w = f(v)
+    w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
+        
+    % v null cline, dv/dt = 0, w = f(v)
+    m_infinity_v = 0.5 * ( 1 + tanh((v-v1)/(v2)) ); 
+    denominator_v_null_cline = g_k * (v - v_k);
+    numerator_v_null_cline = -g_ca * ( m_infinity_v.* (v-v_ca) ) - g_l * (v-v_l) + 30;
+    
+    v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
+
+    figure(7)
+        plot(v, 100*w_null_cline)
+        plot(v, 100*v_null_cline)
+    grid
+
+
+
 end
 
 function result = mle_diff_eqn(t,r)
@@ -304,5 +367,28 @@ function result = mle_diff_eqn3(t,r)
 
     result = zeros(2,1);
     result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)));
+    result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+end
+
+function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
+
+    % defining second set of MLE variables
+    g_ca = 4;
+    g_k = 8.0;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.0667;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 12;
+    v4 = 17.4;
+    v5 = 12;
+    v6 = 17.4;
+    c = 20;
+
+    result = zeros(2,1);
+    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 30);
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
