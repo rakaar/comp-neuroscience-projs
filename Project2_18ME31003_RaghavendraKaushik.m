@@ -189,9 +189,11 @@ function project
 
         % jacobian matrix and their eigen values
         jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+        disp("eigen values for i ext = 86")
         eigen_values3 = double(eig(jacobian3)) % we see that eigen values are negative, implying that equilibrium point is a stable point
         % eigen values are complex, with real part negative => inward spiral
         % we get that inward spiral when we start near the equilibrium pt -27.9,0.17
+
     grid
 
    
