@@ -305,8 +305,27 @@ function project
     
     disp("new equilibrium pts, new set of MLE, iext = 30")
     disp(new_eqs)
+  % characterising the new equilbrium points
+  for i=1:3
+    disp("for point")
+    % finding jacobian values
+    syms v_var3 w_var3
+    dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + 30);
+    dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+    
+    df1_dv3 = diff(dv_dt3, v_var3);
+    df1_dw3 = diff(dv_dt3, w_var3);
+    df2_dv3 = diff(dw_dt3, v_var3);
+    df2_dw3 = diff(dw_dt3, w_var3);
 
-    % disp(new_eq_pts)
+    v_eq3 = new_eqs(1,i)
+    w_eq3 = new_eqs(2,i)
+
+    % jacobian matrix and their eigen values
+    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+    eigen_values3 = double(eig(jacobian3)) 
+    disp("--------------------------")
+end
 
 
 
