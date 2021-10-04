@@ -271,8 +271,10 @@ function project
     v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
 
     figure(7)
-        plot(v, 100*w_null_cline)
-        plot(v, 100*v_null_cline)
+        hold on
+            plot(v, 100*w_null_cline)
+            plot(v, 100*v_null_cline)
+        hold off
     grid
 
 
