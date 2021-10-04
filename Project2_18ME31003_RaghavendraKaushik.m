@@ -277,6 +277,37 @@ function project
         hold off
     grid
 
+    % finding the new equilibrium points
+    new_eqs = []
+    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 30);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+    starting_pt = [-41; 0.02];
+    options = optimoptions('fsolve','Display','iter');
+    [x,fval] = fsolve(F,starting_pt,options);
+    disp(x);
+    new_eqs = [new_eqs, x];
+
+    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 30);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+    starting_pt = [-20; 2];
+    options = optimoptions('fsolve','Display','iter');
+    [x,fval] = fsolve(F,starting_pt,options);
+    disp(x);
+    new_eqs = [new_eqs, x];
+
+
+    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 30);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+    starting_pt = [4; 28];
+    options = optimoptions('fsolve','Display','iter');
+    [x,fval] = fsolve(F,starting_pt,options);
+    disp(x);
+    new_eqs = [new_eqs, x];
+    
+    
+    
+    disp("new equilibrium pts, new set of MLE, iext = 30")
+    disp(new_eqs)
+
+    % disp(new_eq_pts)
+
 
 
 end
