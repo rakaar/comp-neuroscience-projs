@@ -20,8 +20,9 @@ function project
     c = 20;
     
     
-    figure(1)
     % plotting null-clines,finding equilibrium points and their nature, quiver plots
+    % MLE with first set of variables, i external = 0
+    figure(1)
     hold on
         % w null-cline dw/dt = 0, w = f(v)
         w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
@@ -54,6 +55,7 @@ function project
         starting_pt = [-60; 0.01];
         options = optimoptions('fsolve','Display','iter');
         [x,fval] = fsolve(F,starting_pt,options)
+        disp("Equilibrium point for MLE with first set of variables, i external = 0")
         disp(x)
         
 
@@ -80,17 +82,25 @@ function project
         df2_dw = diff(dw_dt2, w_var);
 
         % jacobian matrix and their eigen values
+        disp("jacobian matrix of MLE Iext=0")
         jacobian = [subs(df1_dv,{v_var,w_var},{v_eq, w_eq}) subs(df1_dw,{v_var,w_var},{v_eq, w_eq}); subs(df2_dv,{v_var,w_var},{v_eq, w_eq}) subs(df2_dw,{v_var,w_var},{v_eq, w_eq})  ];
+        disp(double(jacobian));
+        disp("Eigen values of MLE I ext=0, should be stable - both eigen values negative")
         eigen_values = double(eig(jacobian)) % we see that eigen values are negative, implying that equilibrium point is a stable point
         
         % running the equation from Equilibrium point, it stays there
         [t,r] = ode15s(@mle_diff_eqn,[0 100],[x(1) x(2)])
-        plot(r(:,1),100*r(:,2))
+        plot(r(:,1),100*r(:,2));
 
     hold off
     grid
 
+    
+    
+    
+    
     % plotting for different values of phi
+    % MLE Different set of variables for 
     figure(2)
         hold on
         % [t1,r1] = ode15s(@mle_diff_eqn,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.02
@@ -136,6 +146,7 @@ function project
     grid
 
     % V max vs V initial
+    % The plot shows the presence of threshold voltage, intial value above threshold voltage results in action potential kind behaviour
     figure(4)
         hold on
             v_initial = [];
@@ -166,8 +177,8 @@ function project
         hold off
 
         
-        % Calculations verifying the plots - finding new equilibrium point, its jacobian's eigen values to know its kind
-        % estimating the point of intersection with iext = 86
+        % Calculations verifying the plots in figure(5)
+        % finding - new equilibrium point when i ext = 86, its jacobian, its eigen values
         F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 86);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
         starting_pt = [-27; 0.10];
         options = optimoptions('fsolve','Display','iter');
@@ -196,6 +207,32 @@ function project
 
     grid
 
+    % running backwards in time
+    % TODO - Need to draw UPO
+    disp("Running backwards in Time")
+    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 86);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+    starting_pt = [-27; 0.10];
+    options = optimoptions('fsolve','Display','iter');
+    [x,fval] = fsolve(F,starting_pt,options)
+    disp(x) % -27.9524, 0.1195
+    v_eq3 = x(1)
+    w_eq3 = x(2)
+
+    % finding jacobian values
+    syms v_var3 w_var3
+    dv_dt3 = (-1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + 86);
+    dw_dt3 = -phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+    
+    df1_dv3 = diff(dv_dt3, v_var3);
+    df1_dw3 = diff(dv_dt3, w_var3);
+    df2_dv3 = diff(dw_dt3, v_var3);
+    df2_dw3 = diff(dw_dt3, w_var3);
+
+    % jacobian matrix and their eigen values
+    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+    eigen_values3 = double(eig(jacobian3))
+    
+    disp("END of Running backwards in Time")
    
     figure(6)
         hold on
@@ -244,31 +281,7 @@ function project
         eigen_values3 = double(eig(jacobian3)) 
     end
 
-    % running backwards in time
-    disp("Running backwards in Time")
-    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 86);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
-    starting_pt = [-27; 0.10];
-    options = optimoptions('fsolve','Display','iter');
-    [x,fval] = fsolve(F,starting_pt,options)
-    disp(x) % -27.9524, 0.1195
-    v_eq3 = x(1)
-    w_eq3 = x(2)
-
-    % finding jacobian values
-    syms v_var3 w_var3
-    dv_dt3 = (-1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + iext(i));
-    dw_dt3 = -phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
     
-    df1_dv3 = diff(dv_dt3, v_var3);
-    df1_dw3 = diff(dv_dt3, w_var3);
-    df2_dv3 = diff(dw_dt3, v_var3);
-    df2_dw3 = diff(dw_dt3, w_var3);
-
-    % jacobian matrix and their eigen values
-    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
-    eigen_values3 = double(eig(jacobian3))
-    
-    disp("END of Running backwards in Time")
 
 
     % -------------------------------------------------- Different set of MLE variables ------------------------------------------
@@ -297,10 +310,22 @@ function project
     
     v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
 
+    % MLE 2nd set of variables, I ext = 30 quiver plot and  Null clines 
     figure(7)
         hold on
-            plot(v, 100*w_null_cline)
-            plot(v, 100*v_null_cline)
+        plot(v, 100*w_null_cline)
+        plot(v, 100*v_null_cline)
+
+        % quiver plots
+        [v_quiver,w_quiver] = meshgrid(linspace(-80,80,30), linspace(0,1,30));
+        m_infinity_v_quiver = 0.5 * ( 1 + tanh((v_quiver-v1)/(v2)) ); 
+
+        tau_w = 1./cosh((v_quiver-v3)/(2*v4));
+        dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)) + 30);
+        dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
+        quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 1, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+
+
         hold off
     grid
 
