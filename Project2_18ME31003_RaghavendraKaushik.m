@@ -244,6 +244,33 @@ function project
         eigen_values3 = double(eig(jacobian3)) 
     end
 
+    % running backwards in time
+    disp("Running backwards in Time")
+    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 86);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+    starting_pt = [-27; 0.10];
+    options = optimoptions('fsolve','Display','iter');
+    [x,fval] = fsolve(F,starting_pt,options)
+    disp(x) % -27.9524, 0.1195
+    v_eq3 = x(1)
+    w_eq3 = x(2)
+
+    % finding jacobian values
+    syms v_var3 w_var3
+    dv_dt3 = (-1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + iext(i));
+    dw_dt3 = -phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+    
+    df1_dv3 = diff(dv_dt3, v_var3);
+    df1_dw3 = diff(dv_dt3, w_var3);
+    df2_dv3 = diff(dw_dt3, v_var3);
+    df2_dw3 = diff(dw_dt3, w_var3);
+
+    % jacobian matrix and their eigen values
+    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+    eigen_values3 = double(eig(jacobian3))
+    
+    disp("END of Running backwards in Time")
+
+
     % -------------------------------------------------- Different set of MLE variables ------------------------------------------
     g_ca = 4;
     g_k = 8.0;
