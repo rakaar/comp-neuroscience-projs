@@ -107,7 +107,7 @@ function project
         % plot4 = plot(r1(:,1),r1(:,2))
 
         
-
+        + 30
         % [t1,r1] = ode15s(@mle_diff_eqn2,[0 10000],[x(1)+10 x(2)]) % sub threshold, phi = 0.04
         % plot5 = plot(r1(:,1),r1(:,2))
 
@@ -334,6 +334,23 @@ function project
         eigen_values3 = double(eig(jacobian3)) 
     end
 
+    % need to see frequency of action potential vs current
+    % for now lets see, what v vs t looks like for a particular current- action potential
+    
+    figure(10)
+        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-60 0.17]);
+        plot(t, r(:,1));
+    grid
+
+    % i also want to see the trajectory
+    figure(11)
+        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-60 0.17]);
+        plot(r(:,1),100*r(:,2));
+    grid
+    % i see that action potential can be generated only when we are far away from the equilibirum point
+    % [t,r] = ode15s(@mle_diff_eqn,[0 100],[x(1) x(2)])
+    %     plot(r(:,1),100*r(:,2));
+
     
 
 
@@ -481,6 +498,30 @@ function result = mle_diff_eqn_with_i_ext_steady(t,r)
     result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 86);
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
+
+function result = mle_diff_eqn_with_i_ext_steady2(t,r)
+
+    % defining first set of MLE variables
+    g_ca = 4.4;
+    g_k = 8;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.02;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 2;
+    v4 = 30;
+    v5 = 2;
+    v6 = 30;
+    c = 20;
+
+    result = zeros(2,1);
+    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 80);
+    result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+end
+
 function result = mle_diff_eqn2(t,r)
 
     % defining first set of MLE variables, a different phi
