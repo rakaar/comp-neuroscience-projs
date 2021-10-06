@@ -231,6 +231,59 @@ function project
     % jacobian matrix and their eigen values
     jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
     eigen_values3 = double(eig(jacobian3))
+
+
+    % quiver plots with forward time
+    figure(8)
+        hold on
+            % w null-cline dw/dt = 0, w = f(v)
+            w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
+                
+            % v null cline, dv/dt = 0, w = f(v)
+            m_infinity_v = 0.5 * ( 1 + tanh((v-v1)/(v2)) ); 
+            denominator_v_null_cline = g_k * (v - v_k);
+            numerator_v_null_cline = -g_ca * ( m_infinity_v.* (v-v_ca) ) - g_l * (v-v_l) + 86;
+            
+            v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
+
+            plot(v, 100*w_null_cline)
+            plot(v, 100*v_null_cline)
+
+            [v_quiver,w_quiver] = meshgrid(linspace(-80,80,30), linspace(0,1,30));
+            m_infinity_v_quiver = 0.5 * ( 1 + tanh((v_quiver-v1)/(v2)) ); 
+
+            tau_w = 1./cosh((v_quiver-v3)/(2*v4));
+            dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)) + 86);
+            dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
+            quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 10, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+        hold off
+    grid
+
+    % quiver plots with reversing time
+    figure(9)
+        hold on
+            % w null-cline dw/dt = 0, w = f(v)
+            w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
+                
+            % v null cline, dv/dt = 0, w = f(v)
+            m_infinity_v = 0.5 * ( 1 + tanh((v-v1)/(v2)) ); 
+            denominator_v_null_cline = g_k * (v - v_k);
+            numerator_v_null_cline = -g_ca * ( m_infinity_v.* (v-v_ca) ) - g_l * (v-v_l) + 86;
+            
+            v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
+
+            plot(v, 100*w_null_cline)
+            plot(v, 100*v_null_cline)
+
+            [v_quiver,w_quiver] = meshgrid(linspace(-80,80,30), linspace(0,1,30));
+            m_infinity_v_quiver = 0.5 * ( 1 + tanh((v_quiver-v1)/(v2)) ); 
+
+            tau_w = 1./cosh((v_quiver-v3)/(2*v4));
+            dv_dt = (-1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)) + 86);
+            dw_dt = -phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
+            quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 10, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+        hold off
+    grid
     
     disp("END of Running backwards in Time")
    
