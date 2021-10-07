@@ -232,16 +232,16 @@ function project
     jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
     eigen_values3 = double(eig(jacobian3))
     
-    % finding eigen vectors for UPO
-    figure(8) 
-    [eigen_vectors_matrix_right,eigen_values_diagonal_matrix, eigen_vectors_matrix_left] = eig(jacobian3);
-    disp("eigen vectors for i ext = 86, equilibrium points")
-    disp("right")
-    disp(double(eigen_vectors_matrix_right))
-    disp("left")
-    disp(double(eigen_vectors_matrix_left))
+    % % finding eigen vectors for UPO
+    % figure(8) 
+    % [eigen_vectors_matrix_right,eigen_values_diagonal_matrix, eigen_vectors_matrix_left] = eig(jacobian3);
+    % disp("eigen vectors for i ext = 86, equilibrium points")
+    % disp("right")
+    % disp(double(eigen_vectors_matrix_right))
+    % disp("left")
+    % disp(double(eigen_vectors_matrix_left))
 
-    grid
+    % grid
     
     
 
@@ -300,13 +300,21 @@ function project
     % for now lets see, what v vs t looks like for a particular current- action potential
     
     figure(10)
-        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-60 0.17]);
+        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-80 0.10]);
         plot(t, r(:,1));
+
+        % logic - find the number that is being repeated twice
+        % find its index
+        disp("maximum voltage is ......................................................")
+        max_1 = max(r(:,1))
+        disp(r(:,1))
+        
+
     grid
 
     % i also want to see the trajectory
     figure(11)
-        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-60 0.17]);
+        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-80 0.10]);
         plot(r(:,1),100*r(:,2));
     grid
     % i see that action potential can be generated only when we are far away from the equilibirum point
@@ -480,7 +488,7 @@ function result = mle_diff_eqn_with_i_ext_steady2(t,r)
     c = 20;
 
     result = zeros(2,1);
-    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 80);
+    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 90);
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
 
