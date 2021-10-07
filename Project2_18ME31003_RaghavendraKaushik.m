@@ -303,11 +303,16 @@ function project
         [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-80 0.10]);
         plot(t, r(:,1));
 
-        % logic - find the number that is being repeated twice
-        % find its index
+        % round off to integer
+        % find frequency of action potentials
+        % take the first largest frequency one
+        % take a point in middle , its important in middle becoz it has to be in limit cycle
+        % from that point, see till where voltage is decreasing, tgap = t1
+        % now from this point, see till where voltage is increasing, tgap = t2
+        % time period T = t1 + t2
+        % rate / frequency = 1/T
         disp("maximum voltage is ......................................................")
-        max_1 = max(r(:,1))
-        disp(r(:,1))
+        tabulate(round(r(:,1), 0))
         
 
     grid
