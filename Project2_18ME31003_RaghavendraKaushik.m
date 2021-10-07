@@ -327,7 +327,8 @@ function project
     %     plot(r(:,1),100*r(:,2));
 
     
-
+    % To see what happens for equilibirum points as applied current changes
+    % calculate equilibrium points from 80 to 100, plot them on (v,w) curve
 
     % -------------------------------------------------- Different set of MLE variables ------------------------------------------
     g_ca = 4;
