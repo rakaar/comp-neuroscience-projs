@@ -308,89 +308,10 @@ function project
         % take the first largest frequency one
         % take a point in middle , its important in middle becoz it has to be in limit cycle
         % t1 + t2
-        disp("maximum voltage is ......................................................")
-        rounded_off_voltages = round(r(:,1), 0);
-        freq_table_all = tabulate(round(r(:,1), 0));
         
-        [s, s1] = size(freq_table_all);
-        % just remove the negative, we are calculating from positive
-        freq_table = zeros(s,s1)
-        for i=1:s
-            if freq_table_all(i,1) > 0
-                disp(i)
-                freq_table(i,1) = freq_table_all(i,1) ;
-                freq_table(i,2) = freq_table_all(i,2) ;
-                freq_table(i,3) = freq_table_all(i,3) ;
-            end
-        end
-        
-        % find the max_frequency maximum value
-        maximum_frequency = freq_table(1,2);
-        voltage_having_max_freq = freq_table(1,1);
-        for i=1:s
-            if freq_table(i,2) > maximum_frequency
-                maximum_frequency = freq_table(i,2);
-                voltage_having_max_freq = freq_table(i, 1);
-            end
-        end
-        
-        % find all the locations of max-positive_frequency
-        % taking one in middle TODO
-        locations_of_max_positive_frequency = [];
-        [r_rows ,r_cols]= size(rounded_off_voltages)
-        for i=1:r_rows
-            if rounded_off_voltages(i, 1) == voltage_having_max_freq
-                locations_of_max_positive_frequency = [locations_of_max_positive_frequency, i];
-            end
-        end 
-
-        % a peak in middle
-        disp("FFFFFFFFFF")
-        [l_row, l_col] = size(locations_of_max_positive_frequency)
-        random_point_in_middle = floor(l_col/2)
-        peak_in_middle_location = locations_of_max_positive_frequency(1,random_point_in_middle)
-        
-        disp(voltage_having_max_freq)
-        disp(peak_in_middle_location)
-
-        t0 = t(peak_in_middle_location,1);
-        negative_reached = 0;
-        for i=peak_in_middle_location+1:r_rows
-            if rounded_off_voltages(i,1) > rounded_off_voltages(i-1,1) & negative_reached
-                break
-            end
-
-            if rounded_off_voltages(i,1) < 0
-                negative_reached = 1;
-            end
-        end
-
-        t1 = t(i,1);
-        disp("time period is ")
-        disp(t1)
-        disp(t1 - t0)
-
-        positive_reached = 0;
-        for j=i+1:r_rows
-            if rounded_off_voltages(j,1) < rounded_off_voltages(j-1) & positive_reached
-                break
-            end
-
-            if rounded_off_voltages(j,1) > 0
-                positive_reached = 1;
-            end
-
-        end
-
-        t2 = t(j,1);
-        disp("time period is ")
-        disp(t2-t1)
-
-        disp("ultimate action potential")
-        disp(t2 - t0)
-        % REMOVE THIS RETURN AFTERWARDS, THIS STOPS IN MIDDLE
-        return
-
+        frequency_of_ap = 1/calculate_ap_time(r,t)
+        disp("action potentia is ******************")
+       
         
     grid
 
@@ -505,6 +426,83 @@ end
 
 
 end
+
+
+
+function ap_time = calculate_ap_time(r,t)
+        rounded_off_voltages = round(r(:,1), 0);
+        freq_table_all = tabulate(round(r(:,1), 0));
+        
+        [s, s1] = size(freq_table_all);
+        % just remove the negative, we are calculating from positive
+        freq_table = zeros(s,s1)
+        for i=1:s
+            if freq_table_all(i,1) > 0
+                disp(i)
+                freq_table(i,1) = freq_table_all(i,1) ;
+                freq_table(i,2) = freq_table_all(i,2) ;
+                freq_table(i,3) = freq_table_all(i,3) ;
+            end
+        end
+        
+        % find the max_frequency maximum value
+        maximum_frequency = freq_table(1,2);
+        voltage_having_max_freq = freq_table(1,1);
+        for i=1:s
+            if freq_table(i,2) > maximum_frequency
+                maximum_frequency = freq_table(i,2);
+                voltage_having_max_freq = freq_table(i, 1);
+            end
+        end
+        
+        % find all the locations of max-positive_frequency
+        % taking one in middle TODO
+        locations_of_max_positive_frequency = [];
+        [r_rows ,r_cols]= size(rounded_off_voltages)
+        for i=1:r_rows
+            if rounded_off_voltages(i, 1) == voltage_having_max_freq
+                locations_of_max_positive_frequency = [locations_of_max_positive_frequency, i];
+            end
+        end 
+
+        % a peak in middle
+        [l_row, l_col] = size(locations_of_max_positive_frequency)
+        random_point_in_middle = floor(l_col/2)
+        peak_in_middle_location = locations_of_max_positive_frequency(1,random_point_in_middle)
+        
+        
+        t0 = t(peak_in_middle_location,1);
+        negative_reached = 0;
+        for i=peak_in_middle_location+1:r_rows
+            if rounded_off_voltages(i,1) > rounded_off_voltages(i-1,1) & negative_reached
+                break
+            end
+
+            if rounded_off_voltages(i,1) < 0
+                negative_reached = 1;
+            end
+        end
+
+        t1 = t(i,1);
+       
+        positive_reached = 0;
+        for j=i+1:r_rows
+            if rounded_off_voltages(j,1) < rounded_off_voltages(j-1) & positive_reached
+                break
+            end
+
+            if rounded_off_voltages(j,1) > 0
+                positive_reached = 1;
+            end
+
+        end
+
+        t2 = t(j,1);
+        
+        ap_time = t2 - t0
+
+end
+
 
 function result = mle_diff_eqn(t,r)
 
