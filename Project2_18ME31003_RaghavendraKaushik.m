@@ -296,42 +296,20 @@ function project
         eigen_values3 = double(eig(jacobian3)) 
     end
 
-    % need to see frequency of action potential vs current
-    % for now lets see, what v vs t looks like for a particular current- action potential
-    
+    % frequency of action potential vs current
     figure(10)
-        rates_of_ap = []
-        i_ext = []
+        rates_of_ap = [];
+        i_ext = [];
         for i=80:100
-            i_ext = [i_ext, i]
-            [t r] = mle_solution_i_ext_set1(i)
+            i_ext = [i_ext, i];
+            [t r] = mle_solution_i_ext_set1(i);
             frequency_of_ap = 1/calculate_ap_time(r,t);
             rates_of_ap = [rates_of_ap, frequency_of_ap]
         end
 
-        plot(i_ext, rates_of_ap)
+        plot(i_ext, rates_of_ap);
     grid
-    % figure(10)
-    %     for i=90:100
-    %     [t r] = mle_solution_i_ext_set1(i);
-    %     plot(t, r(:,1));
-
-        
-    %     frequency_of_ap = 1/calculate_ap_time(r,t)
     
-    %     end
-        
-    % grid
-
-    % % i also want to see the trajectory
-    % figure(11)
-    %     [t r] = mle_solution_i_ext_set1(90);
-    %     plot(r(:,1),100*r(:,2));
-    % grid
-    % i see that action potential can be generated only when we are far away from the equilibirum point
-    % [t,r] = ode15s(@mle_diff_eqn,[0 100],[x(1) x(2)])
-    %     plot(r(:,1),100*r(:,2));
-
     
     % To see what happens for equilibirum points as applied current changes
     % calculate equilibrium points from 80 to 100, plot them on (v,w) curve
