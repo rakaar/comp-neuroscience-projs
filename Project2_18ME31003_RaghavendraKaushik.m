@@ -228,13 +228,21 @@ function project
             plot(v, 100*w_null_cline)
             plot(v, 100*v_null_cline)
             
-            % [t, r] = ode15s(@mle_diff_eqn_with_i_ext_steady, [0 300], [-27 0.1]);
-            % plot(r(:,1),100*r(:,2));
+            
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady_backward_time,[0 300],[-27.9 0.17]);
+            plot(r(:,1), 100*r(:,2)) 
 
-            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady_backward_time,[0 300],[-27.9 0.17]); % equilibrium point, iext = 86
-            plot(r(:,1), 100*r(:,2)) % we get a limit cycle, we are starting from a point far from new equilibrium point, so can't predict via linearisation, derivates play the role
+
+
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 300],[-50 0.1]);
+            plot(r(:,1), 100*r(:,2))
+
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 300],[-30 0.15]);
+            plot(r(:,1), 100*r(:,2))
+
             xlim([-60 0])
             ylim([0 50])
+
         hold off
     grid
 
