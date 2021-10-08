@@ -300,7 +300,7 @@ function project
     % for now lets see, what v vs t looks like for a particular current- action potential
     
     figure(10)
-        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-80 0.10]);
+        [t r] = mle_solution_i_ext_set1(90);
         plot(t, r(:,1));
 
         % round off to integer
@@ -317,7 +317,7 @@ function project
 
     % i also want to see the trajectory
     figure(11)
-        [t r] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-80 0.10]);
+        [t r] = mle_solution_i_ext_set1(90);
         plot(r(:,1),100*r(:,2));
     grid
     % i see that action potential can be generated only when we are far away from the equilibirum point
@@ -550,28 +550,36 @@ function result = mle_diff_eqn_with_i_ext_steady(t,r)
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
 
-function result = mle_diff_eqn_with_i_ext_steady2(t,r)
+function [t_vec,r_vec] = mle_solution_i_ext_set1(i_ext)
+    
+    
+    function result = mle_diff_eqn_with_i_ext_steady2(t,r)
 
-    % defining first set of MLE variables
-    g_ca = 4.4;
-    g_k = 8;
-    g_l = 2;
-    v_ca = 120;
-    v_k = -84;
-    v_l = -60;
-    phi = 0.02;
-    v1 = -1.2;
-    v2 = 18;
-    v3 = 2;
-    v4 = 30;
-    v5 = 2;
-    v6 = 30;
-    c = 20;
+        % defining first set of MLE variables
+        g_ca = 4.4;
+        g_k = 8;
+        g_l = 2;
+        v_ca = 120;
+        v_k = -84;
+        v_l = -60;
+        phi = 0.02;
+        v1 = -1.2;
+        v2 = 18;
+        v3 = 2;
+        v4 = 30;
+        v5 = 2;
+        v6 = 30;
+        c = 20;
+    
+        result = zeros(2,1);
+        result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + i_ext);
+        result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+    end 
+    
+    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady2, [0 10000], [-80 0.10]);
 
-    result = zeros(2,1);
-    result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 90);
-    result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
+
 
 function result = mle_diff_eqn2(t,r)
 
