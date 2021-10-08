@@ -307,14 +307,55 @@ function project
         % find frequency of action potentials
         % take the first largest frequency one
         % take a point in middle , its important in middle becoz it has to be in limit cycle
-        % from that point, see till where voltage is decreasing, tgap = t1
-        % now from this point, see till where voltage is increasing, tgap = t2
-        % time period T = t1 + t2
-        % rate / frequency = 1/T
+        % t1 + t2
         disp("maximum voltage is ......................................................")
-        tabulate(round(r(:,1), 0))
+        rounded_off_voltages = round(r(:,1), 0);
+        freq_table_all = tabulate(round(r(:,1), 0));
         
+        [s, s1] = size(freq_table_all);
+        % just remove the negative, we are calculating from positive
+        freq_table = zeros(s,s1)
+        for i=1:s
+            if freq_table_all(i,1) > 0
+                disp(i)
+                freq_table(i,1) = freq_table_all(i,1) ;
+                freq_table(i,2) = freq_table_all(i,2) ;
+                freq_table(i,3) = freq_table_all(i,3) ;
+            end
+        end
+        
+        % find the max_frequency maximum value
+        maximum_frequency = freq_table(1,2);
+        voltage_having_max_freq = freq_table(1,1);
+        for i=1:s
+            if freq_table(i,2) > maximum_frequency
+                maximum_frequency = freq_table(i,2);
+                voltage_having_max_freq = freq_table(i, 1);
+            end
+        end
+        
+        % find all the locations of max-positive_frequency
+        % taking one in middle TODO
+        locations_of_max_positive_frequency = [];
+        [r_rows ,r_cols]= size(rounded_off_voltages)
+        for i=1:r_rows
+            if rounded_off_voltages(i, 1) == voltage_having_max_freq
+                locations_of_max_positive_frequency = [locations_of_max_positive_frequency, i];
+            end
+        end 
 
+        % a peak in middle
+        disp("FFFFFFFFFF")
+        [l_row, l_col] = size(locations_of_max_positive_frequency)
+        random_point_in_middle = floor(l_col/2)
+        peak_in_middle_location = locations_of_max_positive_frequency(1,random_point_in_middle)
+        
+        disp(voltage_having_max_freq)
+        disp(peak_in_middle_location)
+        % REMOVE THIS RETURN AFTERWARDS, THIS STOPS IN MIDDLE
+        return
+
+        
     grid
 
     % i also want to see the trajectory
