@@ -352,6 +352,42 @@ function project
         
         disp(voltage_having_max_freq)
         disp(peak_in_middle_location)
+
+        t0 = t(peak_in_middle_location,1);
+        negative_reached = 0;
+        for i=peak_in_middle_location+1:r_rows
+            if rounded_off_voltages(i,1) > rounded_off_voltages(i-1,1) & negative_reached
+                break
+            end
+
+            if rounded_off_voltages(i,1) < 0
+                negative_reached = 1;
+            end
+        end
+
+        t1 = t(i,1);
+        disp("time period is ")
+        disp(t1)
+        disp(t1 - t0)
+
+        positive_reached = 0;
+        for j=i+1:r_rows
+            if rounded_off_voltages(j,1) < rounded_off_voltages(j-1) & positive_reached
+                break
+            end
+
+            if rounded_off_voltages(j,1) > 0
+                positive_reached = 1;
+            end
+
+        end
+
+        t2 = t(j,1);
+        disp("time period is ")
+        disp(t2-t1)
+
+        disp("ultimate action potential")
+        disp(t2 - t0)
         % REMOVE THIS RETURN AFTERWARDS, THIS STOPS IN MIDDLE
         return
 
