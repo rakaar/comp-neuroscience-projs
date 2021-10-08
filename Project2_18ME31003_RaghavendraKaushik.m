@@ -207,48 +207,10 @@ function project
 
     grid
 
-    % running backwards in time
-    % TODO - Need to draw UPO
-    disp("Running backwards in Time")
-    F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + 86);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
-    starting_pt = [-27; 0.10];
-    options = optimoptions('fsolve','Display','iter');
-    [x,fval] = fsolve(F,starting_pt,options)
-    disp(x) % -27.9524, 0.1195
-    v_eq3 = x(1)
-    w_eq3 = x(2)
-
-    % finding jacobian values
-    syms v_var3 w_var3
-    dv_dt3 = (-1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + 86);
-    dw_dt3 = -phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
-    
-    df1_dv3 = diff(dv_dt3, v_var3);
-    df1_dw3 = diff(dv_dt3, w_var3);
-    df2_dv3 = diff(dw_dt3, v_var3);
-    df2_dw3 = diff(dw_dt3, w_var3);
-
-    % jacobian matrix and their eigen values
-    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
-    eigen_values3 = double(eig(jacobian3))
-    
-    % % finding eigen vectors for UPO
-    % figure(8) 
-    % [eigen_vectors_matrix_right,eigen_values_diagonal_matrix, eigen_vectors_matrix_left] = eig(jacobian3);
-    % disp("eigen vectors for i ext = 86, equilibrium points")
-    % disp("right")
-    % disp(double(eigen_vectors_matrix_right))
-    % disp("left")
-    % disp(double(eigen_vectors_matrix_left))
-
-    % grid
     
     
-
-    
-    
-    disp("END of Running backwards in Time")
-   
+    % i = 86
+    % run backwards in time, find UPO,  null clines
     figure(6)
         hold on
              % plot for null clines with iext = 86
@@ -262,8 +224,16 @@ function project
             
             v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
 
+            
             plot(v, 100*w_null_cline)
             plot(v, 100*v_null_cline)
+            
+            % [t, r] = ode15s(@mle_diff_eqn_with_i_ext_steady, [0 300], [-27 0.1]);
+            % plot(r(:,1),100*r(:,2));
+
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 -300],[-27.9 0.17]); % equilibrium point, iext = 86
+            plot2 = plot(r(:,1), 100*r(:,2)) % we get a limit cycle, we are starting from a point far from new equilibrium point, so can't predict via linearisation, derivates play the role
+
         hold off
     grid
 
@@ -272,7 +242,6 @@ function project
     iext = [80, 86, 90]
     for i=1:3
         disp("for i ext is ")
-        disp(iext(i))
         F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + iext(i));  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
         starting_pt = [-27; 0.10];
         options = optimoptions('fsolve','Display','iter');
@@ -304,7 +273,7 @@ function project
             i_ext = [i_ext, i];
             [t r] = mle_solution_i_ext_set1(i);
             frequency_of_ap = 1/calculate_ap_time(r,t);
-            rates_of_ap = [rates_of_ap, frequency_of_ap]
+            rates_of_ap = [rates_of_ap, frequency_of_ap];
         end
 
         plot(i_ext, rates_of_ap);
@@ -421,10 +390,9 @@ function ap_time = calculate_ap_time(r,t)
         
         [s, s1] = size(freq_table_all);
         % just remove the negative, we are calculating from positive
-        freq_table = zeros(s,s1)
+        freq_table = zeros(s,s1);
         for i=1:s
             if freq_table_all(i,1) > 0
-                disp(i)
                 freq_table(i,1) = freq_table_all(i,1) ;
                 freq_table(i,2) = freq_table_all(i,2) ;
                 freq_table(i,3) = freq_table_all(i,3) ;
@@ -444,17 +412,17 @@ function ap_time = calculate_ap_time(r,t)
         % find all the locations of max-positive_frequency
         % taking one in middle TODO
         locations_of_max_positive_frequency = [];
-        [r_rows ,r_cols]= size(rounded_off_voltages)
+        [r_rows ,r_cols]= size(rounded_off_voltages);
         for i=1:r_rows
-            if rounded_off_voltages(i, 1) == voltage_having_max_freq
+            if rounded_off_voltages(i, 1) == voltage_having_max_freq;
                 locations_of_max_positive_frequency = [locations_of_max_positive_frequency, i];
             end
         end 
 
         % a peak in middle
-        [l_row, l_col] = size(locations_of_max_positive_frequency)
-        random_point_in_middle = floor(l_col/2)
-        peak_in_middle_location = locations_of_max_positive_frequency(1,random_point_in_middle)
+        [l_row, l_col] = size(locations_of_max_positive_frequency);
+        random_point_in_middle = floor(l_col/2);
+        peak_in_middle_location = locations_of_max_positive_frequency(1,random_point_in_middle);
         
         
         t0 = t(peak_in_middle_location,1);
@@ -485,7 +453,7 @@ function ap_time = calculate_ap_time(r,t)
 
         t2 = t(j,1);
         
-        ap_time = t2 - t0
+        ap_time = t2 - t0;
 
 end
 
@@ -534,6 +502,29 @@ function result = mle_diff_eqn_with_i_ext_steady(t,r)
     result = zeros(2,1);
     result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 86);
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+end
+
+function result = mle_diff_eqn_with_i_ext_steady_backward_time(t,r)
+
+    % defining first set of MLE variables
+    g_ca = 4.4;
+    g_k = 8;
+    g_l = 2;
+    v_ca = 120;
+    v_k = -84;
+    v_l = -60;
+    phi = 0.02;
+    v1 = -1.2;
+    v2 = 18;
+    v3 = 2;
+    v4 = 30;
+    v5 = 2;
+    v6 = 30;
+    c = 20;
+
+    result = zeros(2,1);
+    result(1) = (-1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 86);
+    result(2) = -phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
 
 function [t_vec,r_vec] = mle_solution_i_ext_set1(i_ext)
@@ -635,3 +626,5 @@ function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
     result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + 30);
     result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
 end
+
+
