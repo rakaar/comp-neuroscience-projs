@@ -234,7 +234,7 @@ function project
 
 
 
-            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 300],[-50 0.1]);
+            [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 300],[-37.98 12.60]);
             plot(r(:,1), 100*r(:,2))
 
             [t,r] = ode15s(@mle_diff_eqn_with_i_ext_steady,[0 300],[-30 0.15]);
@@ -387,6 +387,19 @@ function project
     disp("--------------------------")
 end
 
+    % frequency of action potential vs current
+    figure(12)
+        rates_of_ap = [];
+        i_ext = [];
+        for i=30:45
+            i_ext = [i_ext, i];
+            [t r] = mle_solution_i_ext_set2(i);
+            frequency_of_ap = 1/calculate_ap_time(r,t);
+            rates_of_ap = [rates_of_ap, frequency_of_ap];
+        end
+
+        plot(i_ext, rates_of_ap);
+    grid
 
 
 end
@@ -419,7 +432,6 @@ function ap_time = calculate_ap_time(r,t)
         end
         
         % find all the locations of max-positive_frequency
-        % taking one in middle TODO
         locations_of_max_positive_frequency = [];
         [r_rows ,r_cols]= size(rounded_off_voltages);
         for i=1:r_rows
@@ -637,3 +649,32 @@ function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
 end
 
 
+function [t_vec,r_vec] = mle_solution_i_ext_set2(i_ext)
+    
+    
+    function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
+
+        % defining second set of MLE variables
+        g_ca = 4;
+        g_k = 8.0;
+        g_l = 2;
+        v_ca = 120;
+        v_k = -84;
+        v_l = -60;
+        phi = 0.0667;
+        v1 = -1.2;
+        v2 = 18;
+        v3 = 12;
+        v4 = 17.4;
+        v5 = 12;
+        v6 = 17.4;
+        c = 20;
+    
+        result = zeros(2,1);
+        result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + i_ext);
+        result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+    end 
+    
+    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set, [0 10000], [20 0.10]);
+
+end
