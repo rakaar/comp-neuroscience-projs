@@ -675,6 +675,6 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2(i_ext)
         result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
     end 
     
-    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set, [0 10000], [20 0.10]);
+    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set, [0 10000], [100 0.10]);
 
 end
