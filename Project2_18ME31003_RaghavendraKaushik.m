@@ -352,10 +352,29 @@ function project
         [eigen_vec, eigen_val] = eig(jacobian3);
         disp("eigen vecs")
         disp(double(eigen_vec))
-        disp(double(eigen_val))
+      
 
-         % [t r] = mle_solution_i_ext_set2(30, -19.56, 0.02)  
-        % plot(r(:,1), 100*r(:,2))      
+        length_of_eigen_vec1 = (double(eigen_vec(1,1))^2 + double(eigen_vec(2,1))^2)^0.5;
+        x_pt_on_eigen_vec_1_nearer_to_saddle_node = v_eq3 + 0.01*(double(eigen_vec(1,1))/length_of_eigen_vec1);
+        y_pt_on_eigen_vec_1_nearer_to_saddle_node = w_eq3 + 0.01*(double(eigen_vec(2,1))/length_of_eigen_vec1);
+        disp(double(eigen_vec(1,1)))
+        disp(double(eigen_vec(2,1)))
+        disp(length_of_eigen_vec1)
+        disp(x_pt_on_eigen_vec_1_nearer_to_saddle_node)
+        disp(y_pt_on_eigen_vec_1_nearer_to_saddle_node)
+        [t r] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
+        plot(r(:,1), 100*r(:,2));
+
+        length_of_eigen_vec2 = (double(eigen_vec(1,2))^2 + double(eigen_vec(2,2))^2)^0.5;
+        x_pt_on_eigen_vec_2_nearer_to_saddle_node = v_eq3 + 0.01*(double(eigen_vec(1,2))/length_of_eigen_vec2);
+        y_pt_on_eigen_vec_2_nearer_to_saddle_node = w_eq3 + 0.01*(double(eigen_vec(2,2))/length_of_eigen_vec2);
+        disp(length_of_eigen_vec2)
+        disp(x_pt_on_eigen_vec_2_nearer_to_saddle_node)
+        disp(y_pt_on_eigen_vec_2_nearer_to_saddle_node)
+        [t r] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
+        plot(r(:,1), 100*r(:,2));
+
+        
 
         hold off
     grid
