@@ -334,7 +334,8 @@ function project
         quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 1, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
 
         % to draw manifolds
-        % find eigen vectors at saddle node
+        % find eigen vectors at saddle node - unstable manifolds
+        % >>>>>>>>>>>>>>>>>>>>>>>>>>>> forward in time >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         syms v_var3 w_var3
         dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + 30);
         dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
@@ -372,6 +373,13 @@ function project
         disp(x_pt_on_eigen_vec_2_nearer_to_saddle_node)
         disp(y_pt_on_eigen_vec_2_nearer_to_saddle_node)
         [t r] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
+        plot(r(:,1), 100*r(:,2));
+
+        % <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< backward in time <<<<<<<<<<<<<<<<<<<<<<<
+        [t r] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
+        plot(r(:,1), 100*r(:,2));
+
+        [t r] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
         plot(r(:,1), 100*r(:,2));
 
         
