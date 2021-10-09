@@ -393,7 +393,7 @@ end
         i_ext = [];
         for i=30:45
             i_ext = [i_ext, i];
-            [t r] = mle_solution_i_ext_set2(i);
+            [t r] = mle_solution_i_ext_set2(i, 100, 0.10);
             frequency_of_ap = 1/calculate_ap_time(r,t);
             rates_of_ap = [rates_of_ap, frequency_of_ap];
         end
@@ -649,7 +649,7 @@ function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
 end
 
 
-function [t_vec,r_vec] = mle_solution_i_ext_set2(i_ext)
+function [t_vec,r_vec] = mle_solution_i_ext_set2(i_ext, v_0, w_0)
     
     
     function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
@@ -675,6 +675,6 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2(i_ext)
         result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
     end 
     
-    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set, [0 10000], [100 0.10]);
+    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set, [0 10000], [v_0 w_0]);
 
 end
