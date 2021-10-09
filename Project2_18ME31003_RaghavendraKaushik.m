@@ -321,8 +321,8 @@ function project
     % MLE 2nd set of variables, I ext = 30 quiver plot and  Null clines 
     figure(7)
         hold on
-        plot(v, 100*w_null_cline)
-        plot(v, 100*v_null_cline)
+        % plot(v, 100*w_null_cline)
+        % plot(v, 100*v_null_cline)
 
         % quiver plots
         [v_quiver,w_quiver] = meshgrid(linspace(-80,80,30), linspace(0,1,30));
@@ -331,7 +331,7 @@ function project
         tau_w = 1./cosh((v_quiver-v3)/(2*v4));
         dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)) + 30);
         dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
-        quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 1, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+        % quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 1, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
 
         % to draw manifolds
         % find eigen vectors at saddle node - unstable manifolds
@@ -356,32 +356,29 @@ function project
       
 
         length_of_eigen_vec1 = (double(eigen_vec(1,1))^2 + double(eigen_vec(2,1))^2)^0.5;
-        x_pt_on_eigen_vec_1_nearer_to_saddle_node = v_eq3 + 0.01*(double(eigen_vec(1,1))/length_of_eigen_vec1);
-        y_pt_on_eigen_vec_1_nearer_to_saddle_node = w_eq3 + 0.01*(double(eigen_vec(2,1))/length_of_eigen_vec1);
-        disp(double(eigen_vec(1,1)))
-        disp(double(eigen_vec(2,1)))
-        disp(length_of_eigen_vec1)
-        disp(x_pt_on_eigen_vec_1_nearer_to_saddle_node)
-        disp(y_pt_on_eigen_vec_1_nearer_to_saddle_node)
-        [t r] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
-        plot(r(:,1), 100*r(:,2));
-
+        x_pt_on_eigen_vec_1_nearer_to_saddle_node = v_eq3 + 0.1*(double(eigen_vec(1,1))/length_of_eigen_vec1);
+        y_pt_on_eigen_vec_1_nearer_to_saddle_node = w_eq3 + 0.1*(double(eigen_vec(2,1))/length_of_eigen_vec1);
+        
+        
+        [t3 r3] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
+        unstableManifold1 = plot(r3(:,1), 100*r3(:,2));
+        
+        
         length_of_eigen_vec2 = (double(eigen_vec(1,2))^2 + double(eigen_vec(2,2))^2)^0.5;
-        x_pt_on_eigen_vec_2_nearer_to_saddle_node = v_eq3 + 0.01*(double(eigen_vec(1,2))/length_of_eigen_vec2);
-        y_pt_on_eigen_vec_2_nearer_to_saddle_node = w_eq3 + 0.01*(double(eigen_vec(2,2))/length_of_eigen_vec2);
-        disp(length_of_eigen_vec2)
-        disp(x_pt_on_eigen_vec_2_nearer_to_saddle_node)
-        disp(y_pt_on_eigen_vec_2_nearer_to_saddle_node)
-        [t r] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
-        plot(r(:,1), 100*r(:,2));
+        x_pt_on_eigen_vec_2_nearer_to_saddle_node = v_eq3 + 0.2*(double(eigen_vec(1,2))/length_of_eigen_vec2);
+        y_pt_on_eigen_vec_2_nearer_to_saddle_node = w_eq3 + 0.2*(double(eigen_vec(2,2))/length_of_eigen_vec2);
+        [t4 r4] = mle_solution_i_ext_set2(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
+        unstableManifold2 = plot(r4(:,1), 100*r4(:,2));
 
         % <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< backward in time <<<<<<<<<<<<<<<<<<<<<<<
-        [t r] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
-        plot(r(:,1), 100*r(:,2));
+        disp("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<backward in time <<<<<<<<<<<<<<<<")
+        [t1 r1] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
+        stable_manifold1 = plot(r1(:,1), 100*r1(:,2));
 
-        [t r] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
-        plot(r(:,1), 100*r(:,2));
+        [t2 r2] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
+        stable_manifold2 = plot(r2(:,1), 100*r2(:,2));
 
+        legend([stable_manifold1, stable_manifold2, unstableManifold1, unstableManifold2], ["stable manifold 1", "stable manifold 2", "unstable manifold 1", "unstable manifold 2"]);
         
 
         hold off
@@ -732,7 +729,7 @@ end
 function [t_vec,r_vec] = mle_solution_i_ext_set2_backward_time(i_ext, v_0, w_0)
     
     
-    function result = mle_diff_eqn_with_i_ext_steady_second_set(t,r)
+    function result = mle_diff_eqn_with_i_ext_steady_second_set_backward(t,r)
 
         % defining second set of MLE variables
         g_ca = 4;
@@ -751,10 +748,10 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2_backward_time(i_ext, v_0, w_0)
         c = 20;
     
         result = zeros(2,1);
-        result(1) = (-1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + i_ext);
-        result(2) = -phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
+        result(1) = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((r(1)-v1)/(v2)) ))*(r(1)-v_ca) )) + (-g_k * ( r(2)*(r(1)-v_k) )) + (-g_l * (r(1) - v_l)) + i_ext);
+        result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
     end 
     
-    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set, [0 10000], [v_0 w_0]);
+    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set_backward, [0 -10000], [v_0 w_0]);
 
 end
