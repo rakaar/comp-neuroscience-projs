@@ -321,8 +321,8 @@ function project
     % MLE 2nd set of variables, I ext = 30 quiver plot and  Null clines 
     figure(7)
         hold on
-        % plot(v, 100*w_null_cline)
-        % plot(v, 100*v_null_cline)
+        plot(v, 100*w_null_cline)
+        plot(v, 100*v_null_cline)
 
         % quiver plots
         [v_quiver,w_quiver] = meshgrid(linspace(-80,80,30), linspace(0,1,30));
@@ -331,7 +331,7 @@ function project
         tau_w = 1./cosh((v_quiver-v3)/(2*v4));
         dv_dt = (1/c)*((-g_ca * ( m_infinity_v_quiver.*(v_quiver-v_ca) )) + (-g_k * ( w_quiver.*(v_quiver-v_k) )) + (-g_l * (v_quiver - v_l)) + 30);
         dw_dt = phi * (0.5 * ( 1 + tanh((v_quiver-v3)/(v4)) ) - w_quiver)./tau_w;
-        % quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 1, 'color',[0 0 0]); % arrow length scaled 2 times for visibility
+        quiver(v_quiver,100*w_quiver, dv_dt, 100*dw_dt, 3, 'color',[0 0 0]); % arrow length scaled 3 times for visibility
 
         % to draw manifolds
         % find eigen vectors at saddle node - unstable manifolds
@@ -372,6 +372,9 @@ function project
 
         % <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< backward in time <<<<<<<<<<<<<<<<<<<<<<<
         disp("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<backward in time <<<<<<<<<<<<<<<<")
+        % a different point to start
+        x_pt_on_eigen_vec_1_nearer_to_saddle_node = v_eq3 - 0.002*(double(eigen_vec(1,1))/length_of_eigen_vec1);
+        y_pt_on_eigen_vec_1_nearer_to_saddle_node = w_eq3 - 0.002*(double(eigen_vec(2,1))/length_of_eigen_vec1);
         [t1 r1] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
         stable_manifold1 = plot(r1(:,1), 100*r1(:,2));
 
