@@ -489,6 +489,12 @@ end
      e_leak = v_eq + ((1/g_l) * ((g_k_bar * n_eq^4 * (v_eq - e_k)) + (g_na_bar * m_eq^3 * h_eq * (v_eq - e_na))));
     fprintf("e_leak is %f \n", e_leak);
     % e_leak = -49.401079
+    
+    figure(13)
+        disp("plotting hh")
+        [t_h,r_h] = ode15s(@hh,[0 1000],[50  0.052932 0.596121 0.317677])
+        plot(t_h, r_h(:,1));
+    grid
 
 end
 
@@ -808,10 +814,10 @@ function result = hh(t,r)
     e_na = 55;
 
     g_l = 0.3;
-    e_l = 0;
+    e_l = -49.401079;
 
     c = 1;
-    iext = 0;
+    iext = 10;
 
    
 
