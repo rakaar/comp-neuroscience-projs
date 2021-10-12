@@ -758,3 +758,46 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2_backward_time(i_ext, v_0, w_0)
     [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set_backward, [0 -10000], [v_0 w_0]);
 
 end
+
+%%%%%%%%%%%%%%%%% Hogkin Huxley Equations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function result = hh(t,r)
+
+    % vars
+    g_k_bar = 36;
+    e_k = -72;
+
+    g_na_bar = 120;
+    e_na = 55;
+
+    g_l = 0.3;
+    e_l = 0;
+
+    c = 1;
+    iext = 0;
+
+   
+
+    if r(1) == -35
+        alpha_m = 1;
+    else
+        alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
+    end
+    beta_m = 4 * exp(-(r(1) + 60)/18);
+
+
+    if r(1) == -50 
+        alpha_n = 0.1;
+    else
+        alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+    end
+    beta_n = 0.125 * exp(-(r(1) + 60)/80);
+
+    alpha_h = 0.07 * exp(-(r(1) + 60)/20);
+    beta_h = 1/(1 + exp(-(r(1)+30)/10));
+    
+    result = zeros(4,1); % v,m,h,n
+    result(1) = (1/c) * ( iext - (g_k_bar * r(4)^4 * (r(1) - e_k)) - (g_na_bar * r(2)^3 * r(3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+    result(2) = (alpha_m * (1 - r(2))) - (beta_m * r(2));   
+    result(3) = (alpha_n * (1 - r(3))) - (beta_n * r(3));
+    result(4) = (alpha_h * (1 - r(4))) - (beta_n * r(4));
+end
