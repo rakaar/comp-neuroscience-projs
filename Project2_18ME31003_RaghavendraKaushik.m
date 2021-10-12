@@ -451,6 +451,44 @@ end
         plot(i_ext, rates_of_ap);
     grid
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Hogkin Huxley %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % find out value of E leak such that resting potential is zero
+    % mathematically, dv/dt = 0, at v = -60 and E leak = ? and some values of m, n, h
+    % m, n, h are found by dm/dt = 0, dn/dt = 0; dh/dt = 0
+    disp("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Hogkin Huxley %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5");
+    alpha_m = (-0.1 * (-60 + 35))/(exp(-(-60 + 35)/10) - 1);
+    beta_m = 4;
+
+    alpha_n = (0.1)/(exp(1) - 1);
+    beta_n = 0.125; 
+
+    alpha_h = 0.07 ;
+    beta_h = 1/(1 + exp(3));
+
+    m_eq = alpha_m/(alpha_m + beta_m);
+    h_eq = alpha_h/(alpha_h + beta_h);
+    n_eq = alpha_n/(alpha_n + beta_n);
+
+    fprintf("m h n are %f %f %f \n", m_eq, h_eq, n_eq);
+
+     % vars
+     g_k_bar = 36;
+     e_k = -72;
+ 
+     g_na_bar = 120;
+     e_na = 55;
+ 
+     g_l = 0.3;
+     
+ 
+     c = 1;
+     
+     v_eq = -60;
+
+     % calculating e_leak for i ext = 0
+     e_leak = v_eq + ((1/g_l) * ((g_k_bar * n_eq^4 * (v_eq - e_k)) + (g_na_bar * m_eq^3 * h_eq * (v_eq - e_na))));
+    fprintf("e_leak is %f \n", e_leak);
+    % e_leak = -49.401079
 
 end
 
