@@ -492,8 +492,25 @@ end
     
     figure(13)
         disp("plotting hh")
-        [t_h,r_h] = ode15s(@hh,[0 1000],[50  0.052932 0.596121 0.317677])
+        [t_h,r_h] = ode15s(@hh,[0 1000],[50  0.052932 0.596121 0.317677]);
         plot(t_h, r_h(:,1));
+    grid
+
+    figure(14)
+        hold on
+            disp("Myotonic hh")
+            [t r] = myotonoic_hh(0);
+            plot(t, r(:,1));
+
+            [t1 r1] = myotonoic_hh(0.1);
+            plot(t1, r1(:,1));
+
+            [t2 r2] = myotonoic_hh(0.17);
+            plot(t2, r2(:,1));
+
+            [t3 r3] = myotonoic_hh(0.2);
+            plot(t3, r3(:,1));
+        hold off
     grid
 
 end
@@ -804,6 +821,54 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2_backward_time(i_ext, v_0, w_0)
 end
 
 %%%%%%%%%%%%%%%%% Hogkin Huxley Equations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [t_vec,r_vec] = myotonoic_hh(f_ni)
+    
+    
+    function result = hh_with_problem(t,r)
+
+        % vars
+        g_k_bar = 36;
+        e_k = -72;
+
+        g_na_bar = 120;
+        e_na = 55;
+
+        g_l = 0.3;
+        e_l = -49.401079;
+
+        c = 1;
+        iext = 10;
+
+        if r(1) == -35
+            alpha_m = 1;
+        else
+            alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
+        end
+        beta_m = 4 * exp(-(r(1) + 60)/18);
+
+
+        if r(1) == -50 
+            alpha_n = 0.1;
+        else
+            alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+        end
+        beta_n = 0.125 * exp(-(r(1) + 60)/80);
+
+        alpha_h = 0.07 * exp(-(r(1) + 60)/20);
+        beta_h = 1/(1 + exp(-(r(1)+30)/10));
+        
+        result = zeros(4,1); % v,m,h,n
+        result(1) = (1/c) * ( iext - (g_k_bar * r(4)^4 * (r(1) - e_k)) - (g_na_bar * (1-f_ni) * r(2)^3 * r(3) * (r(1) - e_na)   +    g_na_bar * f_ni  * r(2)^3 *  (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+        result(2) = (alpha_m * (1 - r(2))) - (beta_m * r(2));   
+        result(3) = (alpha_n * (1 - r(3))) - (beta_n * r(3));
+        result(4) = (alpha_h * (1 - r(4))) - (beta_n * r(4));
+    end 
+    
+    [t_vec r_vec] = ode15s(@hh_with_problem, [0 10000], [10  0.052932 0.596121 0.317677]);
+
+end
+
 function result = hh(t,r)
 
     % vars
