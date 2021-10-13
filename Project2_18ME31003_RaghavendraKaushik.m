@@ -492,24 +492,33 @@ end
     
     figure(13)
         disp("plotting hh")
-        [t_h,r_h] = ode15s(@hh,[0 1000],[50  0.052932 0.596121 0.317677]);
+        [t_h,r_h] = ode15s(@hh,[0 1000],[10  0.052932 0.596121 0.317677]);
         plot(t_h, r_h(:,1));
     grid
 
     figure(14)
         hold on
             disp("Myotonic hh")
+            
+            subplot(2,2,1)
             [t r] = myotonoic_hh(0);
             plot(t, r(:,1));
+            title('f_in = 0')
 
+            subplot(2,2,2)
             [t1 r1] = myotonoic_hh(0.1);
             plot(t1, r1(:,1));
+            title('f_in = 0.1');
 
+            subplot(2,2,3)
             [t2 r2] = myotonoic_hh(0.17);
             plot(t2, r2(:,1));
+            title('f_in = 0.17')
 
+            subplot(2,2,4)
             [t3 r3] = myotonoic_hh(0.2);
             plot(t3, r3(:,1));
+            title('f_in = 0.20')
         hold off
     grid
 
@@ -861,11 +870,11 @@ function [t_vec,r_vec] = myotonoic_hh(f_ni)
         result = zeros(4,1); % v,m,h,n
         result(1) = (1/c) * ( iext - (g_k_bar * r(4)^4 * (r(1) - e_k)) - (g_na_bar * (1-f_ni) * r(2)^3 * r(3) * (r(1) - e_na)   +    g_na_bar * f_ni  * r(2)^3 *  (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
         result(2) = (alpha_m * (1 - r(2))) - (beta_m * r(2));   
-        result(3) = (alpha_n * (1 - r(3))) - (beta_n * r(3));
-        result(4) = (alpha_h * (1 - r(4))) - (beta_n * r(4));
+        result(3) = (alpha_h * (1 - r(3))) - (beta_h * r(3));
+        result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
     end 
     
-    [t_vec r_vec] = ode15s(@hh_with_problem, [0 10000], [10  0.052932 0.596121 0.317677]);
+    [t_vec r_vec] = ode15s(@hh_with_problem, [0 300], [50  0.052932 0.596121 0.317677]);
 
 end
 
@@ -907,6 +916,6 @@ function result = hh(t,r)
     result = zeros(4,1); % v,m,h,n
     result(1) = (1/c) * ( iext - (g_k_bar * r(4)^4 * (r(1) - e_k)) - (g_na_bar * r(2)^3 * r(3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
     result(2) = (alpha_m * (1 - r(2))) - (beta_m * r(2));   
-    result(3) = (alpha_n * (1 - r(3))) - (beta_n * r(3));
-    result(4) = (alpha_h * (1 - r(4))) - (beta_n * r(4));
+    result(3) = (alpha_h * (1 - r(3))) - (beta_h * r(3));
+    result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
 end
