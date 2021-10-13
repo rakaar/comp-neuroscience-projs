@@ -522,6 +522,11 @@ end
         hold off
     grid
 
+    figure(17)
+        [t_h,r_h] = ode15s(@hh_2d,[0 300],[10 0.317677]);
+        plot(r_h(:,1), r_h(:,2));
+    grid
+
 end
 
 
@@ -830,6 +835,36 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2_backward_time(i_ext, v_0, w_0)
 end
 
 %%%%%%%%%%%%%%%%% Hogkin Huxley Equations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function result = hh_2d(t,r)
+
+    % vars
+    g_k_bar = 36;
+    e_k = -72;
+
+    g_na_bar = 120;
+    e_na = 55;
+
+    g_l = 0.3;
+    e_l = -49.401079;
+
+    c = 1;
+    iext = 0;
+
+   m = 0.052932;
+   h = 0.596121;
+
+    if r(1) == -50 
+        alpha_n = 0.1;
+    else
+        alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+    end
+    beta_n = 0.125 * exp(-(r(1) + 60)/80);
+
+    
+    result = zeros(2,1); % v,n
+    result(1) = (1/c) * ( iext - (g_k_bar * r(2)^4 * (r(1) - e_k)) - (g_na_bar * m^3 * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+    result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
+end
 
 function [t_vec,r_vec] = myotonoic_hh(f_ni)
     
