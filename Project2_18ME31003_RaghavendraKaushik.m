@@ -518,10 +518,41 @@ end
         ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
         (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
         ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
-    ], [v,m,h,n])
+    ], [v,m,h,n]);
     disp("equilibrium points for hh ")
     fprintf("v m h n %f %f %f %f \n", X.v, X.m, X.h, X.n)
 
+    % finding eigen values of jacobian
+    syms v1 m1 h1 n1
+    dv_dt = (1/c)* (-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (m1^3) * h1 * (v1 - e_na)) - (g_l * (v1 - e_l)));
+    dm_dt = ((-0.1 * (v1+35))/(exp(-(v1+35)/10) -1))*(1-m1) - (4 * exp(-(v1+60)/18))*(m1);
+    dh_dt = (0.07 * exp(-(v1+60)/20))*(1-h1) - (1/(exp(-(v1+30)/10) + 1))*(h1);
+    dn_dt = ((-0.01 * (v1+50))/(exp(-(v1+50)/10) - 1))*(1-n1) - (0.125 * (exp(-(v1+60)/80)))*(n1);
+
+    jacobian = zeros(4,4);
+    jacobian(1,1) = subs(diff(dv_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(1,2) = subs(diff(dv_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(1,3) = subs(diff(dv_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(1,4) = subs(diff(dv_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    jacobian(2,1) = subs(diff(dm_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(2,2) = subs(diff(dm_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(2,3) = subs(diff(dm_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(2,4) = subs(diff(dm_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    jacobian(3,1) = subs(diff(dh_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(3,2) = subs(diff(dh_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(3,3) = subs(diff(dh_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(3,4) = subs(diff(dh_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    jacobian(4,1) = subs(diff(dn_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(4,2) = subs(diff(dn_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(4,3) = subs(diff(dn_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(4,4) = subs(diff(dn_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    eigen_values = double(eig(jacobian));
+    disp("eigen values of hh model 4d");
+    disp(eigen_values);
 
 
 
@@ -892,7 +923,7 @@ function result = hh_2d(t,r)
 
     
     result = zeros(2,1); % v,n
-    result(1) = (1/c) * ( iext - (g_k_bar * r(2)^4 * (r(1) - e_k)) - (g_na_bar * m^3 * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+    result(1) = (1/c) * ( iext - (g_k_bar * (r(2)^4) * (r(1) - e_k)) - (g_na_bar * (m^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
     result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
 end
 
