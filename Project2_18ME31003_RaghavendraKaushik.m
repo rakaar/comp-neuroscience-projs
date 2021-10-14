@@ -554,8 +554,7 @@ end
     disp("eigen values of hh model 4d");
     disp(eigen_values);
 
-
-
+    
 
     figure(14)
         hold on
@@ -584,8 +583,13 @@ end
     grid
 
     figure(17)
-        [t_h,r_h] = ode15s(@hh_2d,[0 1000],[30 0.317677]);
-        plot(t_h, r_h(:,1));
+        hold on
+            [t_h,r_h] = ode15s(@hh_2d,[0 1000],[50 0.317]);
+            plot(r_h(:,1), r_h(:,2));
+
+            [t_h1,r_h1] = ode15s(@hh_2d,[0 1000],[-30 0.317]);
+            plot(r_h1(:,1), r_h1(:,2));
+        hold off
     grid
 
 end
@@ -911,9 +915,7 @@ function result = hh_2d(t,r)
     c = 1;
     iext = 10;
 
-   m = 0.052932;
-   h = 0.596121;
-
+   
     if r(1) == -50 
         alpha_n = 0.1;
     else
@@ -921,9 +923,13 @@ function result = hh_2d(t,r)
     end
     beta_n = 0.125 * exp(-(r(1) + 60)/80);
 
+    % values of m and h at equilibrium
+    m = 0.052932;
+    h = 0.596121;
+
     
     result = zeros(2,1); % v,n
-    result(1) = (1/c) * ( iext - (g_k_bar * (r(2)^4) * (r(1) - e_k)) - (g_na_bar * (m^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+    result(1) = (1/c) * (iext - (g_k_bar * (r(2)^4) * (r(1) - e_k))   - (g_na_bar * (m^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
     result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
 end
 
@@ -987,7 +993,7 @@ function result = hh(t,r)
     e_l = -49.401079;
 
     c = 1;
-    iext = 10;
+    iext = 13;
 
    
 
