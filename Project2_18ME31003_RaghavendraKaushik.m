@@ -496,6 +496,36 @@ end
         plot(t_h, r_h(:,1));
     grid
 
+
+    % finding out stability of hh model, i ext = 0
+    % 1. find the point, 2. find eigen values
+    % x = [v m h n]
+    g_k_bar = 36;
+    e_k = -72;
+
+    g_na_bar = 120;
+    e_na = 55;
+
+    g_l = 0.3;
+    e_l = -49.401079;
+
+    c = 1;
+    
+    % solving equilbirum point using vpasolve 
+    syms v m h n
+    X = vpasolve([
+        (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+        ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+        (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
+        ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+    ], [v,m,h,n])
+    disp("equilibrium points for hh ")
+    fprintf("v m h n %f %f %f %f \n", X.v, X.m, X.h, X.n)
+
+
+
+
+
     figure(14)
         hold on
             disp("Myotonic hh")
@@ -523,8 +553,8 @@ end
     grid
 
     figure(17)
-        [t_h,r_h] = ode15s(@hh_2d,[0 300],[10 0.317677]);
-        plot(r_h(:,1), r_h(:,2));
+        [t_h,r_h] = ode15s(@hh_2d,[0 1000],[30 0.317677]);
+        plot(t_h, r_h(:,1));
     grid
 
 end
@@ -848,7 +878,7 @@ function result = hh_2d(t,r)
     e_l = -49.401079;
 
     c = 1;
-    iext = 0;
+    iext = 10;
 
    m = 0.052932;
    h = 0.596121;
