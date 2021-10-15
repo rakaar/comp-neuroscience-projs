@@ -554,9 +554,30 @@ end
     disp("eigen values of hh model 4d");
     disp(eigen_values);
 
-    
+    % % calculating threshold for hh
+    % Non zero AP not a good idea, just see v rise vs time for intial few seconds
+    % figure(14)
+    %     rates = [];
+    %     v_inital_values = [];
+    %     for step_size=0:+0.001:0.1
+    %         [t r] = ode15s(@hh, [0 1000] ,[-60+step_size  0.052932 0.596121 0.317677]);
+    %         rate = calculate_ap_time(r,t);
+    %         rates = [rates, rate];
+    %         v_inital_values = [v_inital_values, -60+step_size];
+    %     end
+    %     plot(v_inital_values, rates)
+    % grid
 
     figure(14)
+        hold on
+            for step_size=1:10
+                [t r] = ode15s(@hh, [0 100], [-60+step_size 0.052932 0.596121 0.317677 ]);
+                plot(t, r(:,1));
+            end
+        hold off
+    grid
+
+    figure(16)
         hold on
             disp("Myotonic hh")
             
@@ -1021,3 +1042,4 @@ function result = hh(t,r)
     result(3) = (alpha_h * (1 - r(3))) - (beta_h * r(3));
     result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
 end
+
