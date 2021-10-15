@@ -658,14 +658,30 @@ end
         hold off
     grid
 
-
+    % phase plane analysis n-v with myotonia
+    
     figure(18)
+        v = linspace(-70, 70);
+            
+        if v == -50 
+            alpha_n = 0.1;
+        else
+            alpha_n = (-0.01 * (v + 50))./(exp(-(v + 50)/10) - 1);
+        end
+        beta_n = 0.125 * exp(-(v + 60)/80);
+    
+        m = 0.052932;
+        h = 0.596121;
+    
+        f_ni = 0.1;
+        iext = 0;
+        % v_nullcline = (1/c) * (iext - (g_k_bar * (r(2)^4) * (v - e_k))   - (g_na_bar * (1-f_ni)* (m^3) * h * (r(1) - e_na)) - (g_na_bar * (f_ni)* (m^3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
+        v_null_cline = ((-(g_na_bar *(1-f_ni) * (m^3) * h * (v - e_na)) - (g_na_bar * f_ni * (m^3) * (v - e_na)) - (g_l * (v - e_l))) ./ (g_k * (v - e_k))).^ (1/4) ;
+        n_nullcline = alpha_n ./ (alpha_n + beta_n);
         hold on
-            for i=0.02:+0.05:0.4
-                [t, r] = myotonoic_hh_2d(i);
-                plot(r(:,1), r(:,2));
-            end
-        hold off 
+            plot(v, 100*v_null_cline);
+            plot(v, 100*n_nullcline);
+        hold off
     grid
 end
 
@@ -850,7 +866,7 @@ function result = mle_diff_eqn2(t,r)
     g_ca = 4.4;
     g_k = 8;
     g_l = 2;
-    v_ca = 120;
+    v_ca = 120; 
     v_k = -84;
     v_l = -60;
     phi = 0.04;
