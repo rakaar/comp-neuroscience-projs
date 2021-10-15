@@ -519,8 +519,8 @@ end
         (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
         ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
     ], [v,m,h,n]);
-    disp("equilibrium points for hh ")
-    fprintf("v m h n %f %f %f %f \n", X.v, X.m, X.h, X.n)
+    disp("equilibrium points for hh ");
+    fprintf("v m h n %f %f %f %f \n", X.v, X.m, X.h, X.n);
 
     % finding eigen values of jacobian
     syms v1 m1 h1 n1
@@ -568,14 +568,59 @@ end
     %     plot(v_inital_values, rates)
     % grid
 
-    figure(14)
-        hold on
-            for step_size=1:10
-                [t r] = ode15s(@hh, [0 100], [-60+step_size 0.052932 0.596121 0.317677 ]);
-                plot(t, r(:,1));
-            end
-        hold off
-    grid
+    % figure(14)
+    %     hold on
+    %         for step_size=1:10
+    %             [t r] = ode15s(@hh, [0 100], [-60+step_size 0.052932 0.596121 0.317677 ]);
+    %             plot(t, r(:,1));
+    %         end
+    %     hold off
+    % grid
+
+    % stability of equilbirum points
+    for i=8:12
+        syms v m h n
+    X = vpasolve([
+        -i + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+        ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+        (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
+        ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+    ], [v,m,h,n]);
+    fprintf("I ext is %f\n",i);
+    fprintf("v m h n %f %f %f %f \n", X.v, X.m, X.h, X.n);
+
+    % finding eigen values of jacobian
+    syms v1 m1 h1 n1
+    dv_dt = (1/c)* (i-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (m1^3) * h1 * (v1 - e_na)) - (g_l * (v1 - e_l)));
+    dm_dt = ((-0.1 * (v1+35))/(exp(-(v1+35)/10) -1))*(1-m1) - (4 * exp(-(v1+60)/18))*(m1);
+    dh_dt = (0.07 * exp(-(v1+60)/20))*(1-h1) - (1/(exp(-(v1+30)/10) + 1))*(h1);
+    dn_dt = ((-0.01 * (v1+50))/(exp(-(v1+50)/10) - 1))*(1-n1) - (0.125 * (exp(-(v1+60)/80)))*(n1);
+
+    jacobian = zeros(4,4);
+    jacobian(1,1) = subs(diff(dv_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(1,2) = subs(diff(dv_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(1,3) = subs(diff(dv_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(1,4) = subs(diff(dv_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    jacobian(2,1) = subs(diff(dm_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(2,2) = subs(diff(dm_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(2,3) = subs(diff(dm_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(2,4) = subs(diff(dm_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    jacobian(3,1) = subs(diff(dh_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(3,2) = subs(diff(dh_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(3,3) = subs(diff(dh_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(3,4) = subs(diff(dh_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    jacobian(4,1) = subs(diff(dn_dt, v1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(4,2) = subs(diff(dn_dt, m1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(4,3) = subs(diff(dn_dt, h1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+    jacobian(4,4) = subs(diff(dn_dt, n1), {v1, m1, h1, n1}, {X.v, X.m, X.h, X.n});
+
+    eigen_values = double(eig(jacobian));
+    disp(eigen_values);
+    end
+
 
     figure(16)
         hold on
@@ -613,6 +658,15 @@ end
         hold off
     grid
 
+
+    figure(18)
+        hold on
+            for i=0.02:+0.05:0.4
+                [t, r] = myotonoic_hh_2d(i);
+                plot(r(:,1), r(:,2));
+            end
+        hold off 
+    grid
 end
 
 
@@ -952,6 +1006,44 @@ function result = hh_2d(t,r)
     result = zeros(2,1); % v,n
     result(1) = (1/c) * (iext - (g_k_bar * (r(2)^4) * (r(1) - e_k))   - (g_na_bar * (m^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
     result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
+end
+
+function [t_vec, r_vec] = myotonoic_hh_2d(f_ni)
+    function result = hh_2d_defective(t,r)
+
+        % vars
+        g_k_bar = 36;
+        e_k = -72;
+    
+        g_na_bar = 120;
+        e_na = 55;
+    
+        g_l = 0.3;
+        e_l = -49.401079;
+    
+        c = 1;
+        iext = 10;
+    
+       
+        if r(1) == -50 
+            alpha_n = 0.1;
+        else
+            alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+        end
+        beta_n = 0.125 * exp(-(r(1) + 60)/80);
+    
+        % values of m and h at equilibrium
+        m = 0.052932;
+        h = 0.596121;
+    
+        
+        result = zeros(2,1); % v,n
+        result(1) = (1/c) * (iext - (g_k_bar * (r(2)^4) * (r(1) - e_k))   - (g_na_bar * (1-f_ni)* (m^3) * h * (r(1) - e_na)) - (g_na_bar * (f_ni)* (m^3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
+        result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
+    end 
+
+    [t_vec r_vec] = ode15s(@hh_2d_defective, [0 300], [50  0.317677]);
+
 end
 
 function [t_vec,r_vec] = myotonoic_hh(f_ni)
