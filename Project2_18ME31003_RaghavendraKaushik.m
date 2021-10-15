@@ -682,6 +682,31 @@ end
             plot(v, 100*v_null_cline);
             plot(v, 100*n_nullcline);
         hold off
+
+        for f_ni=0.02:+0.05:0.4
+            syms v n
+            X = vpasolve([
+                 (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (1-f_ni) * (m^3) * h * (v - e_na)) + (g_na_bar * (f_ni) * (m^3)  * (v - e_na)) + (g_l * (v - e_l)) == 0,
+                ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+            ], [v, n]);
+
+            fprintf("f_in is %f\n",f_ni);
+            fprintf("v n  %f %f \n", X.v, X.n);
+
+            syms  v1 n1
+            dv_dt = (1/c)* (-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (1-f_ni) * (m^3) * h * (v1 - e_na)) - (g_na_bar * f_ni * (m^3) * (v1 - e_na)) - (g_l * (v1 - e_l)));
+            dn_dt = ((-0.01 * (v1+50))/(exp(-(v1+50)/10) - 1))*(1-n1) - (0.125 * (exp(-(v1+60)/80)))*(n1);
+            
+            jacobian = zeros(2,2);
+            jacobian(1,1) = subs(diff(dv_dt, v1), {v1,n1}, {X.v,  X.n});
+            jacobian(1,2) = subs(diff(dv_dt, n1), {v1, n1}, {X.v,  X.n});
+            jacobian(2,1) = subs(diff(dn_dt, v1), {v1, n1}, {X.v,  X.n});
+            jacobian(2,2) = subs(diff(dn_dt, n1), {v1, n1}, {X.v,  X.n});
+            
+            eigen_values = double(eig(jacobian));
+            disp(eigen_values);
+        end
+
     grid
 end
 
