@@ -375,10 +375,10 @@ function project
         % a different point to start
         x_pt_on_eigen_vec_1_nearer_to_saddle_node = v_eq3 - 0.002*(double(eigen_vec(1,1))/length_of_eigen_vec1);
         y_pt_on_eigen_vec_1_nearer_to_saddle_node = w_eq3 - 0.002*(double(eigen_vec(2,1))/length_of_eigen_vec1);
-        [t1 r1] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
+        [t1 r1] = mle_solution_i_ext_set2_backward_time(30,x_pt_on_eigen_vec_1_nearer_to_saddle_node, y_pt_on_eigen_vec_1_nearer_to_saddle_node);
         stable_manifold1 = plot(r1(:,1), 100*r1(:,2));
 
-        [t2 r2] = mle_solution_i_ext_set2_backward_time(30, x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
+        [t2 r2] = mle_solution_i_ext_set2_backward_time(30,  x_pt_on_eigen_vec_2_nearer_to_saddle_node, y_pt_on_eigen_vec_2_nearer_to_saddle_node);
         stable_manifold2 = plot(r2(:,1), 100*r2(:,2));
 
         legend([stable_manifold1, stable_manifold2, unstableManifold1, unstableManifold2], ["stable manifold 1", "stable manifold 2", "unstable manifold 1", "unstable manifold 2"]);
@@ -556,27 +556,18 @@ end
 
     % % calculating threshold for hh
     % Non zero AP not a good idea, just see v rise vs time for intial few seconds
-    % figure(14)
-    %     rates = [];
-    %     v_inital_values = [];
-    %     for step_size=0:+0.001:0.1
-    %         [t r] = ode15s(@hh, [0 1000] ,[-60+step_size  0.052932 0.596121 0.317677]);
-    %         rate = calculate_ap_time(r,t);
-    %         rates = [rates, rate];
-    %         v_inital_values = [v_inital_values, -60+step_size];
-    %     end
-    %     plot(v_inital_values, rates)
-    % grid
+    figure(141)
+        v_max = [];
+        v_inital_values = [];
+        for step_size=1:20
+            [t r] = ode15s(@hh, [0 1000] ,[-60+step_size  0.052932 0.596121 0.317677]);
+            v_max = [v_max, max(r(:,1))];
+            v_inital_values = [v_inital_values, -60+step_size];
+        end
+        plot(v_inital_values, v_max)
+    grid
 
-    % figure(14)
-    %     hold on
-    %         for step_size=1:10
-    %             [t r] = ode15s(@hh, [0 100], [-60+step_size 0.052932 0.596121 0.317677 ]);
-    %             plot(t, r(:,1));
-    %         end
-    %     hold off
-    % grid
-
+   
     % stability of equilbirum points
     for i=8:12
         syms v m h n
@@ -1011,7 +1002,7 @@ function [t_vec,r_vec] = mle_solution_i_ext_set2_backward_time(i_ext, v_0, w_0)
         result(2) = phi * (0.5 * ( 1 + tanh((r(1)-v3)/(v4)) ) - r(2))/(1/cosh((r(1)-v3)/(2*v4)));
     end 
     
-    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set_backward, [0 -10000], [v_0 w_0]);
+    [t_vec r_vec] = ode15s(@mle_diff_eqn_with_i_ext_steady_second_set_backward, [0 -1000], [v_0 w_0]);
 
 end
 
@@ -1147,7 +1138,7 @@ function result = hh(t,r)
     e_l = -49.401079;
 
     c = 1;
-    iext = 13;
+    iext = 0;
 
    
 
