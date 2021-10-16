@@ -437,6 +437,50 @@ function project
     disp("--------------------------")
 end
 
+    % finding equilibrium points for range 30 to 45
+    disp("analysing equilbirum points from 30 to 50");
+    for i=30:50
+        syms v w
+         % defining second set of MLE variables
+            g_ca = 4;
+            g_k = 8.0;
+            g_l = 2;
+            v_ca = 120;
+            v_k = -84;
+            v_l = -60;
+            phi = 0.0667;
+            v1 = -1.2;
+            v2 = 18;
+            v3 = 12;
+            v4 = 17.4;
+            v5 = 12;
+            v6 = 17.4;
+            c = 20;
+
+        X = vpasolve([
+            (1/c)*(i +(-g_ca * ( (0.5 * ( 1 + tanh((v-v1)/(v2)) ))*(v-v_ca) )) + (-g_k * ( w*(v-v_k) )) +(-g_l * (v - v_l))) == 0 ,
+            phi * (0.5 * ( 1 + tanh((v-v3)/(v4)) ) - w)/(1/cosh((v-v3)/(2*v4))) == 0
+        ],[v, w]);
+    
+        v_eq3 = X.v;
+        w_eq3 = X.w;
+        
+        syms v_var3 w_var3
+        dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + i);
+        dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+        
+        df1_dv3 = diff(dv_dt3, v_var3);
+        df1_dw3 = diff(dv_dt3, w_var3);
+        df2_dv3 = diff(dw_dt3, v_var3);
+        df2_dw3 = diff(dw_dt3, w_var3);
+
+       jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+       eigen_values3 = double(eig(jacobian3));
+
+       fprintf("i ext  %f\n",i);
+       disp(eigen_values3)
+    end
+
     % frequency of action potential vs current
     figure(12)
         rates_of_ap = [];
@@ -664,7 +708,7 @@ end
         m = 0.052932;
         h = 0.596121;
     
-        f_ni = 0.1;
+        f_ni = 0.4;
         iext = 0;
         % v_nullcline = (1/c) * (iext - (g_k_bar * (r(2)^4) * (v - e_k))   - (g_na_bar * (1-f_ni)* (m^3) * h * (r(1) - e_na)) - (g_na_bar * (f_ni)* (m^3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
         v_null_cline = ((-(g_na_bar *(1-f_ni) * (m^3) * h * (v - e_na)) - (g_na_bar * f_ni * (m^3) * (v - e_na)) - (g_l * (v - e_l))) ./ (g_k * (v - e_k))).^ (1/4) ;
