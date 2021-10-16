@@ -684,13 +684,51 @@ end
     grid
 
     figure(17)
-        hold on
-            [t_h,r_h] = ode15s(@hh_2d,[0 1000],[50 0.317]);
-            plot(r_h(:,1), r_h(:,2));
+     % vars
+        g_k_bar = 36;
+        e_k = -72;
 
-            [t_h1,r_h1] = ode15s(@hh_2d,[0 1000],[-30 0.317]);
-            plot(r_h1(:,1), r_h1(:,2));
+        g_na_bar = 120;
+        e_na = 55;
+
+        g_l = 0.3;
+        e_l = -49.401079;
+
+        c = 1;
+        iext = 0;
+
+   
+        % values of m and h at equilibrium
+        m = 0.052932;
+        h = 0.596121;
+
+    
+
+        syms v n
+        X = vpasolve([
+            (1/c) * (iext - (g_k_bar * (n^4) * (v - e_k))   - (g_na_bar * (m^3) * h * (v - e_na)) - (g_l * (v - e_l)) ) == 0,
+            (((-0.01 * (v + 50))/(exp(-(v + 50)/10) - 1)) * (1 - n)) - (( 0.125 * exp(-(v + 60)/80)) * n) == 0
+        ],[v,n]);
+        
+        v_eq = X.v;
+        n_eq = X.n;
+
+        v_in = [];
+        v_max = [];
+        hold on
+        
+            for i=40:+10:80
+                v_start = double(v_eq + i);
+                n_start = double(n_eq);
+
+                [t r] = ode15s(@hh_2d, [0 300], [v_start n_start]);
+                v_in = [v_in, v_eq+i];
+                v_max = [v_max, max(r(:,1))];
+                plot(r(:,1), r(:,2));
+            end
+        % plot(v_in, v_max);   
         hold off
+        
     grid
 
     % phase plane analysis n-v with myotonia
@@ -1064,7 +1102,7 @@ function result = hh_2d(t,r)
     e_l = -49.401079;
 
     c = 1;
-    iext = 10;
+    iext = 0;
 
    
     if r(1) == -50 
