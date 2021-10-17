@@ -469,17 +469,16 @@ end
         
             F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + i);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
             options = optimoptions('fsolve','Display','off');
-            
-            starting_pt = [-41; 0.02];
-            [x,fval] = fsolve(F,starting_pt,options);
-            v_eq3 = x(1);
-            w_eq3 = x(2);
-            jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
-            eigen_values3 = double(eig(jacobian3));
-            disp(x);
-            disp(eigen_values3)
-                    
             if i < 40 
+                starting_pt = [-41; 0.02];
+                [x,fval] = fsolve(F,starting_pt,options);
+                v_eq3 = x(1);
+                w_eq3 = x(2);
+                jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+                eigen_values3 = double(eig(jacobian3));
+                disp(x);
+                disp(eigen_values3)
+                    
                 starting_pt = [-20; 2];
                 [x,fval] = fsolve(F,starting_pt,options);
                 v_eq3 = x(1);
@@ -502,23 +501,7 @@ end
    
    
    
-    figure(420)
-    % w null-cline dw/dt = 0, w = f(v)
-    w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
-        
-    % v null cline, dv/dt = 0, w = f(v)
-    m_infinity_v = 0.5 * ( 1 + tanh((v-v1)/(v2)) ); 
-    denominator_v_null_cline = g_k * (v - v_k);
-    numerator_v_null_cline = -g_ca * ( m_infinity_v.* (v-v_ca) ) - g_l * (v-v_l) + 39;
-    
-    v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
-
-    % MLE 2nd set of variables, I ext = 30 quiver plot and  Null clines 
-        hold on
-        plot(v, 100*w_null_cline)
-        plot(v, 100*v_null_cline)
-        hold off
-    grid
+   
 
     % frequency of action potential vs current
     figure(12)
@@ -1287,4 +1270,5 @@ function result = hh(t,r)
     result(3) = (alpha_h * (1 - r(3))) - (beta_h * r(3));
     result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
 end
+
 
