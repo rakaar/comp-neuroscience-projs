@@ -437,10 +437,10 @@ function project
     disp("--------------------------")
 end
 
-    % finding equilibrium points for range 30 to 45
+    % finding equilibrium points for range 30 to 50
     disp("analysing equilbirum points from 30 to 50");
     for i=30:50
-        syms v w
+        fprintf("i ext is %f \n",i);
          % defining second set of MLE variables
             g_ca = 4;
             g_k = 8.0;
@@ -457,28 +457,64 @@ end
             v6 = 17.4;
             c = 20;
 
-        X = vpasolve([
-            (1/c)*(i +(-g_ca * ( (0.5 * ( 1 + tanh((v-v1)/(v2)) ))*(v-v_ca) )) + (-g_k * ( w*(v-v_k) )) +(-g_l * (v - v_l))) == 0 ,
-            phi * (0.5 * ( 1 + tanh((v-v3)/(v4)) ) - w)/(1/cosh((v-v3)/(2*v4))) == 0
-        ],[v, w]);
+            syms v_var3 w_var3
+            dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + i);
+            dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+            
+            df1_dv3 = diff(dv_dt3, v_var3);
+            df1_dw3 = diff(dv_dt3, w_var3);
+            df2_dv3 = diff(dw_dt3, v_var3);
+            df2_dw3 = diff(dw_dt3, w_var3);
+        
+            F = @(x) [(1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((x(1)-v1)/(v2)) ))*(x(1)-v_ca) )) + (-g_k * ( x(2)*(x(1)-v_k) )) + (-g_l * (x(1) - v_l)) + i);  phi * (0.5 * ( 1 + tanh((x(1)-v3)/(v4)) ) - x(2))/(1/cosh((x(1)-v3)/(2*v4)))];
+            options = optimoptions('fsolve','Display','off');
+            
+            starting_pt = [-41; 0.02];
+            [x,fval] = fsolve(F,starting_pt,options);
+            v_eq3 = x(1);
+            w_eq3 = x(2);
+            jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+            eigen_values3 = double(eig(jacobian3));
+            disp(eigen_values3)
+                    
+            starting_pt = [-20; 2];
+            [x,fval] = fsolve(F,starting_pt,options);
+            v_eq3 = x(1);
+            w_eq3 = x(2);
+            jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+            eigen_values3 = double(eig(jacobian3));
+            disp(eigen_values3)
+                    
+        
+            starting_pt = [4; 28];
+            [x,fval] = fsolve(F,starting_pt,options);
+            v_eq3 = x(1);
+            jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+            eigen_values3 = double(eig(jacobian3));
+            disp(eigen_values3)
+                
+    %         X = vpasolve([
+    %         (1/c)*(i +(-g_ca * ( (0.5 * ( 1 + tanh((v-v1)/(v2)) ))*(v-v_ca) )) + (-g_k * ( w*(v-v_k) )) +(-g_l * (v - v_l))) == 0 ,
+    %         phi * (0.5 * ( 1 + tanh((v-v3)/(v4)) ) - w)/(1/cosh((v-v3)/(2*v4))) == 0
+    %     ],[v, w]);
     
-        v_eq3 = X.v;
-        w_eq3 = X.w;
+    %     v_eq3 = X.v;
+    %     w_eq3 = X.w;
         
-        syms v_var3 w_var3
-        dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + i);
-        dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
+    %     syms v_var3 w_var3
+    %     dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + i);
+    %     dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
         
-        df1_dv3 = diff(dv_dt3, v_var3);
-        df1_dw3 = diff(dv_dt3, w_var3);
-        df2_dv3 = diff(dw_dt3, v_var3);
-        df2_dw3 = diff(dw_dt3, w_var3);
+    %     df1_dv3 = diff(dv_dt3, v_var3);
+    %     df1_dw3 = diff(dv_dt3, w_var3);
+    %     df2_dv3 = diff(dw_dt3, v_var3);
+    %     df2_dw3 = diff(dw_dt3, w_var3);
 
-       jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
-       eigen_values3 = double(eig(jacobian3));
+    %    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+    %    eigen_values3 = double(eig(jacobian3));
 
-       fprintf("i ext  %f\n",i);
-       disp(eigen_values3)
+    %    fprintf("i ext  %f\n",i);
+    %    disp(eigen_values3)
     end
 
     % frequency of action potential vs current
