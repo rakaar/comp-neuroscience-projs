@@ -438,6 +438,7 @@ function project
 end
 
     % finding equilibrium points for range 30 to 50
+
     disp("analysing equilbirum points from 30 to 50");
     for i=30:50
         fprintf("i ext is %f \n",i);
@@ -475,47 +476,49 @@ end
             w_eq3 = x(2);
             jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
             eigen_values3 = double(eig(jacobian3));
+            disp(x);
             disp(eigen_values3)
                     
-            starting_pt = [-20; 2];
-            [x,fval] = fsolve(F,starting_pt,options);
-            v_eq3 = x(1);
-            w_eq3 = x(2);
-            jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
-            eigen_values3 = double(eig(jacobian3));
-            disp(eigen_values3)
-                    
-        
+            if i < 40 
+                starting_pt = [-20; 2];
+                [x,fval] = fsolve(F,starting_pt,options);
+                v_eq3 = x(1);
+                w_eq3 = x(2);
+                disp(x);
+                jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
+                eigen_values3 = double(eig(jacobian3));
+                disp(eigen_values3)
+            end
             starting_pt = [4; 28];
             [x,fval] = fsolve(F,starting_pt,options);
             v_eq3 = x(1);
+            w_eq3 = x(2);
+            disp(x);
             jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
             eigen_values3 = double(eig(jacobian3));
             disp(eigen_values3)
                 
-    %         X = vpasolve([
-    %         (1/c)*(i +(-g_ca * ( (0.5 * ( 1 + tanh((v-v1)/(v2)) ))*(v-v_ca) )) + (-g_k * ( w*(v-v_k) )) +(-g_l * (v - v_l))) == 0 ,
-    %         phi * (0.5 * ( 1 + tanh((v-v3)/(v4)) ) - w)/(1/cosh((v-v3)/(2*v4))) == 0
-    %     ],[v, w]);
-    
-    %     v_eq3 = X.v;
-    %     w_eq3 = X.w;
-        
-    %     syms v_var3 w_var3
-    %     dv_dt3 = (1/c)*((-g_ca * ( (0.5 * ( 1 + tanh((v_var3-v1)/(v2)) ))*(v_var3-v_ca) )) + (-g_k * ( w_var3*(v_var3-v_k) )) + (-g_l * (v_var3 - v_l)) + i);
-    %     dw_dt3 = phi * (0.5 * ( 1 + tanh((v_var3-v3)/(v4)) ) - w_var3)/(1/cosh((v_var3-v3)/(2*v4)));
-        
-    %     df1_dv3 = diff(dv_dt3, v_var3);
-    %     df1_dw3 = diff(dv_dt3, w_var3);
-    %     df2_dv3 = diff(dw_dt3, v_var3);
-    %     df2_dw3 = diff(dw_dt3, w_var3);
-
-    %    jacobian3 = [subs(df1_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df1_dw3,{v_var3,w_var3},{v_eq3, w_eq3}); subs(df2_dv3,{v_var3,w_var3},{v_eq3, w_eq3}) subs(df2_dw3,{v_var3,w_var3},{v_eq3, w_eq3})  ];
-    %    eigen_values3 = double(eig(jacobian3));
-
-    %    fprintf("i ext  %f\n",i);
-    %    disp(eigen_values3)
     end
+   
+   
+   
+    figure(420)
+    % w null-cline dw/dt = 0, w = f(v)
+    w_null_cline = 0.5 * ( 1 + tanh((v-v3)/(v4)) );
+        
+    % v null cline, dv/dt = 0, w = f(v)
+    m_infinity_v = 0.5 * ( 1 + tanh((v-v1)/(v2)) ); 
+    denominator_v_null_cline = g_k * (v - v_k);
+    numerator_v_null_cline = -g_ca * ( m_infinity_v.* (v-v_ca) ) - g_l * (v-v_l) + 39;
+    
+    v_null_cline = numerator_v_null_cline./denominator_v_null_cline;
+
+    % MLE 2nd set of variables, I ext = 30 quiver plot and  Null clines 
+        hold on
+        plot(v, 100*w_null_cline)
+        plot(v, 100*v_null_cline)
+        hold off
+    grid
 
     % frequency of action potential vs current
     figure(12)
