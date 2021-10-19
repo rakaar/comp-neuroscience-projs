@@ -778,14 +778,14 @@ end
             plot(v, 100*n_nullcline);
         hold off
 
-        for f_ni=0.02:+0.05:0.4
+        for f_ni=0.02:+0.02:0.4
             syms v n
             X = vpasolve([
                  (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (1-f_ni) * (m^3) * h * (v - e_na)) + (g_na_bar * (f_ni) * (m^3)  * (v - e_na)) + (g_l * (v - e_l)) == 0,
                 ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
             ], [v, n]);
 
-            fprintf("f_in is %f\n",f_ni);
+            fprintf("f_ni is %f\n",f_ni);
             fprintf("v n  %f %f \n", X.v, X.n);
 
             syms  v1 n1
