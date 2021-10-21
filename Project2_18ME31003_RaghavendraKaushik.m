@@ -706,53 +706,34 @@ end
     grid
 
     figure(17)
-     % vars
-        g_k_bar = 36;
-        e_k = -72;
 
-        g_na_bar = 120;
-        e_na = 55;
-
-        g_l = 0.3;
-        e_l = -49.401079;
-
-        c = 1;
-        iext = 0;
-
-   
-        % values of m and h at equilibrium
-        m = 0.052932;
-        h = 0.596121;
-
-    
-
-        syms v n
-        X = vpasolve([
-            (1/c) * (iext - (g_k_bar * (n^4) * (v - e_k))   - (g_na_bar * (m^3) * h * (v - e_na)) - (g_l * (v - e_l)) ) == 0,
-            (((-0.01 * (v + 50))/(exp(-(v + 50)/10) - 1)) * (1 - n)) - (( 0.125 * exp(-(v + 60)/80)) * n) == 0
-        ],[v,n]);
-        
-        v_eq = X.v;
-        n_eq = X.n;
-
-        v_in = [];
+  
+        iext = [];
         v_max = [];
-        hold on
-        
-            for i=40:+10:80
-                v_start = double(v_eq + i);
-                n_start = double(n_eq);
+        hold on 
+            for i=1:10
 
-                [t r] = ode15s(@hh_2d, [0 300], [v_start n_start]);
-                v_in = [v_in, v_eq+i];
+                X = vpasolve([
+                    -i + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+                    ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+                   ], [v,m,h,n]);
+                fprintf("I ext is %f\n",i);
+                fprintf("v n %f %f %f %f \n", X.v, X.n);
+            
+                [t r] = hh2d_with_iext(i, double(X.v) + 50, double(X.n));
                 v_max = [v_max, max(r(:,1))];
-                plot(r(:,1), r(:,2));
+                iext = [iext, i];
+                plot(r(:,1), r(:,2));   
+                
             end
-        % plot(v_in, v_max);   
-        hold off
         
+        hold off
     grid
 
+    figure(171)
+        plot(iext, v_max);
+    grid
+    
     % phase plane analysis n-v with myotonia
     
     figure(18)
@@ -806,6 +787,18 @@ end
 end
 
 
+function m_value = get_m(v_value)
+    beta_m  = 4 * exp(-(v_value+60)/18);
+
+
+    if v_value == -35
+        m_value = 1/(1+beta_m);
+    else
+        alpha_m = (-0.1 * (v_value + 35))/(exp(-(v_value + 35)/10) - 1);
+
+        m_value =  alpha_m/(alpha_m + beta_m);
+    end
+end
 
 function ap_time = calculate_ap_time(r,t)
         rounded_off_voltages = round(r(:,1), 0);
@@ -1134,16 +1127,66 @@ function result = hh_2d(t,r)
     end
     beta_n = 0.125 * exp(-(r(1) + 60)/80);
 
+    if r(1) == -35
+        alpha_m = 1;
+    else
+        alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
+    end
+    beta_m = 4 * exp(-(r(1) + 60)/18);
+
     % values of m and h at equilibrium
-    m = 0.052932;
+    % m = 0.052932;
     h = 0.596121;
 
     
     result = zeros(2,1); % v,n
-    result(1) = (1/c) * (iext - (g_k_bar * (r(2)^4) * (r(1) - e_k))   - (g_na_bar * (m^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
+    result(1) = (1/c) * (iext - (g_k_bar * (r(2)^4) * (r(1) - e_k))   - (g_na_bar * ((alpha_m/(alpha_m + beta_m))^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
     result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
 end
 
+
+function [t_vec, r_vec] = hh2d_with_iext(iext, v_start, n_start)
+    function result = hh_2d_diffeqn(t,r)
+
+        % vars
+        g_k_bar = 36;
+        e_k = -72;
+    
+        g_na_bar = 120;
+        e_na = 55;
+    
+        g_l = 0.3;
+        e_l = -49.401079;
+    
+        c = 1;
+    
+       
+        if r(1) == -50 
+            alpha_n = 0.1;
+        else
+            alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+        end
+        beta_n = 0.125 * exp(-(r(1) + 60)/80);
+    
+        if r(1) == -35
+            alpha_m = 1;
+        else
+            alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
+        end
+        beta_m = 4 * exp(-(r(1) + 60)/18);
+    
+        h = 0.596121;
+    
+        m_inf = alpha_m/(alpha_m + beta_m)
+        result = zeros(2,1); % v,n
+        result(1) = (1/c) * ( iext - (g_k_bar * (r(2)^4) * (r(1) - e_k) )  - (g_na_bar * (m_inf^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+        result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
+    end
+
+    [t_vec r_vec] = ode15s(@hh_2d_diffeqn, [0 300], [v_start  n_start]);
+
+
+end
 function [t_vec, r_vec] = myotonoic_hh_2d(f_ni)
     function result = hh_2d_defective(t,r)
 
