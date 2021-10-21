@@ -3,26 +3,84 @@
 function project
 
     % anode break
-    % vars
-    g_k_bar = 36;
-    e_k = -72;
+    figure(19)
+        % vars
+        g_k_bar = 36;
+        e_k = -72;
 
-    g_na_bar = 120;
-    e_na = 55;
+        g_na_bar = 120;
+        e_na = 55;
 
-    g_l = 0.3;
-    e_l = -49.401079;
+        g_l = 0.3;
+        e_l = -49.401079;
+        syms v m h n
+        X = vpasolve([
+            (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+            ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+            (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
+            ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+        ], [v,m,h,n]);
+
+        v_rest = double(X.v);
+        [t r] = ode15s(@hh_i_negative_for_anode_break, [0 50], [double(X.v) double(X.m) double(X.h) double(X.n)]);
+        plot(t, r(:,1));
+    grid
+
+
+
     syms v m h n
     X = vpasolve([
-        (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+        3 + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0, % -i + ...
         ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
         (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
         ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
     ], [v,m,h,n]);
-    figure(19)
-        [t r] = ode15s(@hh_i_negative_for_anode_break, [0 50], [double(X.v) double(X.m) double(X.h) double(X.n)]);
-        plot(t, r(:,1));
+
+    v_h = double(X.v);
+    
+
+    % case 1
+    v20 = linspace(-70,70);
+
+    if v20 == -35
+        alpha_m = 1;
+    else
+        alpha_m = (-0.1 * (v20 + 35))./(exp(-(v20 + 35)/10) - 1);
+    end
+    beta_m = 4 * exp(-(v20 + 60)/18);
+
+    m_nullcline =  alpha_m./(alpha_m + beta_m);
+
+    figure(201)
+        n1 = get_n20(v_rest);
+        h1 = get_h20(v_rest);
+        disp("case 1")
+        disp(v_rest);
+        disp(n1);
+        disp(h1);
+        v_null_cline201 =  (((-g_k_bar * n1^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
+        hold on
+            plot(v20, 100*v_null_cline201);
+            plot(v20, 100*m_nullcline);
+        hold off
     grid
+
+    figure(202)
+        % case 2 
+        n2 = get_n20(v_h);
+        h2 = get_h20(v_h);
+        disp("case 2")
+        disp(v_h);
+        disp(n2);
+        disp(h2);
+        v_null_cline202 = (( -3 + (-g_k_bar * n2^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
+        hold on
+            plot(v20, 100*v_null_cline202);
+            plot(v20, 100*m_nullcline);
+        hold off
+    grid
+
+
 
     % khatam karo jaldi
     return
@@ -1398,10 +1456,24 @@ function result = hh_i_negative_for_anode_break(t,r)
     else
         iext = 0;
     end
-    
+
     result = zeros(4,1); % v,m,h,n
     result(1) = (1/c) * (iext - (g_k_bar * r(4)^4 * (r(1) - e_k)) - (g_na_bar * r(2)^3 * r(3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
     result(2) = (alpha_m * (1 - r(2))) - (beta_m * r(2));   
     result(3) = (alpha_h * (1 - r(3))) - (beta_h * r(3));
     result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
+end
+
+function n20 = get_n20(v)
+    alpha_n = (-0.01 * (v + 50))/(exp(-(v + 50)/10) - 1);
+    beta_n = 0.125 * exp(-(v + 60)/80);
+
+    n20 = alpha_n/(alpha_n + beta_n);
+end
+
+function h20 = get_h20(v)
+    alpha_h = 0.07 * exp(-(v + 60)/20);
+    beta_h = 1/(1 + exp(-(v+30)/10));
+
+    h20 = alpha_h/(alpha_h + beta_h);
 end
