@@ -759,7 +759,7 @@ end
         m_inf = alpha_m./(alpha_m + beta_m);
         h = 0.596121;
     
-        f_ni = 0.02;
+        f_ni = 0.20;
         iext = 0;
 
         g_k_bar = 36;   e_k = -72;    g_na_bar = 120;    e_na = 55;    g_l = 0.3;   e_l = -49.401079;
@@ -787,7 +787,7 @@ end
 
 
         for f_ni=0.02:+0.02:0.4
-            fprintf("f_ni is %f\n",f_ni);
+            fprintf("f_ni is %f  ",f_ni);
             for i=1:3
                 syms v n
                 X = vpasolve([
@@ -795,8 +795,8 @@ end
                     ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
                 ], [v, n], [initial_guess(i,1);initial_guess(i,2)]);
     
-                fprintf("v n  %f %f \n", X.v, X.n);
-    
+                % fprintf("v n  %f %f \n", X.v, X.n);
+                
                 syms  v1 n1
                 dv_dt = (1/c)* (-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (1-f_ni) * ((1/(1+((4 * exp(-(v1+60)/18))/((-0.1 * (v1 + 35))/(exp(-(v1 + 35)/10) - 1)))))^3) * h * (v1 - e_na)) - (g_na_bar * f_ni * ((1/(1+((4 * exp(-(v1+60)/18))/((-0.1 * (v1 + 35))/(exp(-(v1 + 35)/10) - 1)))))^3) * (v1 - e_na)) - (g_l * (v1 - e_l)));
                 dn_dt = ((-0.01 * (v1+50))/(exp(-(v1+50)/10) - 1))*(1-n1) - (0.125 * (exp(-(v1+60)/80)))*(n1);
@@ -808,8 +808,10 @@ end
                 jacobian(2,2) = subs(diff(dn_dt, n1), {v1, n1}, {X.v,  X.n});
                 
                 eigen_values = double(eig(jacobian));
-                disp(eigen_values);
+                % disp(eigen_values);
+                fprintf("  %s ", get_stability(eigen_values));
             end
+            fprintf("\n");
         end
 
     grid
@@ -899,6 +901,29 @@ end
 
 end
 
+function stability_status = get_stability(eigen_values)
+    v1 = eigen_values(1,1);
+    v2 = eigen_values(2,1);
+
+    if isreal(v1)
+        if v1*v2 > 0
+            if(v1 > 0)
+                stability_status = "unstable";
+            else
+                stability_status = "stable";
+            end
+        else
+            stability_status = "saddle";
+        end
+
+    else 
+        if real(v1) > 0
+            stability_status = "unstable spiral";
+        else
+            stability_status = "stable spiral";
+        end
+    end
+end
 
 function m_value = get_m(v_value)
     beta_m  = 4 * exp(-(v_value+60)/18);
