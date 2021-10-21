@@ -1,6 +1,33 @@
 
 
 function project
+
+    % anode break
+    % vars
+    g_k_bar = 36;
+    e_k = -72;
+
+    g_na_bar = 120;
+    e_na = 55;
+
+    g_l = 0.3;
+    e_l = -49.401079;
+    syms v m h n
+    X = vpasolve([
+        (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+        ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+        (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
+        ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+    ], [v,m,h,n]);
+    figure(19)
+        [t r] = ode15s(@hh_i_negative_for_anode_break, [0 50], [double(X.v) double(X.m) double(X.h) double(X.n)]);
+        plot(t, r(:,1));
+    grid
+
+    % khatam karo jaldi
+    return
+
+
     v = linspace(-80, 80);
 
     % defining first set of MLE variables
@@ -756,7 +783,7 @@ end
         m_inf = alpha_m./(alpha_m + beta_m);
         h = 0.596121;
     
-        f_ni = 0.4;
+        f_ni = 0.02;
         iext = 0;
        
         % 18_nullcline = (1/c) * (iext - (g_k_bar * (r(2)^4) * (v - e_k))   - (g_na_bar * (1-f_ni)* (m^3) * h * (r(1) - e_na)) - (g_na_bar * (f_ni)* (m^3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
@@ -792,6 +819,14 @@ end
         end
 
     grid
+
+
+
+    % anode break
+    % figure(19)
+    %     [t r] = ode15s(@hh_i_negative_for_anode_break, [0 20], [-60 0.052932 0.596121 0.317677]);
+    %     plot(t, r(:,1));
+    % grid
 end
 
 
@@ -1323,3 +1358,50 @@ function result = hh(t,r)
 end
 
 
+
+function result = hh_i_negative_for_anode_break(t,r)
+
+    % vars
+    g_k_bar = 36;
+    e_k = -72;
+
+    g_na_bar = 120;
+    e_na = 55;
+
+    g_l = 0.3;
+    e_l = -49.401079;
+
+    c = 1;
+   
+   
+
+    if r(1) == -35
+        alpha_m = 1;
+    else
+        alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
+    end
+    beta_m = 4 * exp(-(r(1) + 60)/18);
+
+
+    if r(1) == -50 
+        alpha_n = 0.1;
+    else
+        alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+    end
+    beta_n = 0.125 * exp(-(r(1) + 60)/80);
+
+    alpha_h = 0.07 * exp(-(r(1) + 60)/20);
+    beta_h = 1/(1 + exp(-(r(1)+30)/10));
+    
+    if t < 20
+        iext = -3;
+    else
+        iext = 0;
+    end
+    
+    result = zeros(4,1); % v,m,h,n
+    result(1) = (1/c) * (iext - (g_k_bar * r(4)^4 * (r(1) - e_k)) - (g_na_bar * r(2)^3 * r(3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+    result(2) = (alpha_m * (1 - r(2))) - (beta_m * r(2));   
+    result(3) = (alpha_h * (1 - r(3))) - (beta_h * r(3));
+    result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
+end
