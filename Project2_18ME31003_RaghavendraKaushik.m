@@ -2,90 +2,8 @@
 
 function project
 
-    % anode break
-    figure(19)
-        % vars
-        g_k_bar = 36;
-        e_k = -72;
-
-        g_na_bar = 120;
-        e_na = 55;
-
-        g_l = 0.3;
-        e_l = -49.401079;
-        syms v m h n
-        X = vpasolve([
-            (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
-            ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
-            (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
-            ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
-        ], [v,m,h,n]);
-
-        v_rest = double(X.v);
-        [t r] = ode15s(@hh_i_negative_for_anode_break, [0 50], [double(X.v) double(X.m) double(X.h) double(X.n)]);
-        plot(t, r(:,1));
-    grid
-
-
-
-    syms v m h n
-    X = vpasolve([
-        3 + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0, % -i + ...
-        ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
-        (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
-        ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
-    ], [v,m,h,n]);
-
-    v_h = double(X.v);
-    
-
-    % case 1
-    v20 = linspace(-70,70);
-
-    if v20 == -35
-        alpha_m = 1;
-    else
-        alpha_m = (-0.1 * (v20 + 35))./(exp(-(v20 + 35)/10) - 1);
-    end
-    beta_m = 4 * exp(-(v20 + 60)/18);
-
-    m_nullcline =  alpha_m./(alpha_m + beta_m);
-
-    figure(201)
-        n1 = get_n20(v_rest);
-        h1 = get_h20(v_rest);
-        disp("case 1")
-        disp(v_rest);
-        disp(n1);
-        disp(h1);
-        v_null_cline201 =  (((-g_k_bar * n1^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
-        hold on
-            plot(v20, 100*v_null_cline201);
-            plot(v20, 100*m_nullcline);
-        hold off
-    grid
-
-    figure(202)
-        % case 2 
-        n2 = get_n20(v_h);
-        h2 = get_h20(v_h);
-        disp("case 2")
-        disp(v_h);
-        disp(n2);
-        disp(h2);
-        v_null_cline202 = (( -3 + (-g_k_bar * n2^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
-        hold on
-            plot(v20, 100*v_null_cline202);
-            plot(v20, 100*m_nullcline);
-        hold off
-    grid
-
-
-
-    % khatam karo jaldi
-    return
-
-
+   
+  
     v = linspace(-80, 80);
 
     % defining first set of MLE variables
@@ -843,48 +761,142 @@ end
     
         f_ni = 0.02;
         iext = 0;
+
+        g_k_bar = 36;   e_k = -72;    g_na_bar = 120;    e_na = 55;    g_l = 0.3;   e_l = -49.401079;
        
         % 18_nullcline = (1/c) * (iext - (g_k_bar * (r(2)^4) * (v - e_k))   - (g_na_bar * (1-f_ni)* (m^3) * h * (r(1) - e_na)) - (g_na_bar * (f_ni)* (m^3) * (r(1) - e_na)) - (g_l * (r(1) - e_l)) ) ;
-        v_null_cline18 = ((-(g_na_bar *(1-f_ni) * h * (m_inf.^3) .* (v18 - e_na)) - (g_na_bar * f_ni * (m_inf.^3) .* (v18 - e_na)) - (g_l * (v18 - e_l))) ./ (g_k * (v18 - e_k))).^ (1/4) ;
+        v_null_cline18 = ((-(g_na_bar *(1-f_ni) * h * (m_inf.^3) .* (v18 - e_na)) - (g_na_bar * f_ni * (m_inf.^3) .* (v18 - e_na)) - (g_l * (v18 - e_l))) ./ (g_k_bar * (v18 - e_k))).^ (1/4) ;
         n_nullcline18 = alpha_n ./ (alpha_n + beta_n);
         hold on
             plot(v18, 100*v_null_cline18);
             plot(v18, 100*n_nullcline18);
         hold off
 
+        initial_guess = zeros(3,2);
+
+        initial_guess(1,1) = -60.1;
+        initial_guess(1,2) = 0.31;
+
+
+        initial_guess(2,1) = -47.3;
+        initial_guess(2,2) = 0.51;
+
+
+        initial_guess(3,1) = 19.09;
+        initial_guess(3,2) = 0.93;
+
+
         for f_ni=0.02:+0.02:0.4
-            syms v n
-            X = vpasolve([
-                 (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (1-f_ni) * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3) * h * (v - e_na)) + (g_na_bar * (f_ni) * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3)  * (v - e_na)) + (g_l * (v - e_l)) == 0,
-                ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
-            ], [v, n]);
-
             fprintf("f_ni is %f\n",f_ni);
-            fprintf("v n  %f %f \n", X.v, X.n);
-
-            syms  v1 n1
-            dv_dt = (1/c)* (-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (1-f_ni) * ((1/(1+((4 * exp(-(v1+60)/18))/((-0.1 * (v1 + 35))/(exp(-(v1 + 35)/10) - 1)))))^3) * h * (v1 - e_na)) - (g_na_bar * f_ni * ((1/(1+((4 * exp(-(v1+60)/18))/((-0.1 * (v1 + 35))/(exp(-(v1 + 35)/10) - 1)))))^3) * (v1 - e_na)) - (g_l * (v1 - e_l)));
-            dn_dt = ((-0.01 * (v1+50))/(exp(-(v1+50)/10) - 1))*(1-n1) - (0.125 * (exp(-(v1+60)/80)))*(n1);
-            
-            jacobian = zeros(2,2);
-            jacobian(1,1) = subs(diff(dv_dt, v1), {v1,n1}, {X.v,  X.n});
-            jacobian(1,2) = subs(diff(dv_dt, n1), {v1, n1}, {X.v,  X.n});
-            jacobian(2,1) = subs(diff(dn_dt, v1), {v1, n1}, {X.v,  X.n});
-            jacobian(2,2) = subs(diff(dn_dt, n1), {v1, n1}, {X.v,  X.n});
-            
-            eigen_values = double(eig(jacobian));
-            disp(eigen_values);
+            for i=1:3
+                syms v n
+                X = vpasolve([
+                     (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (1-f_ni) * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3) * h * (v - e_na)) + (g_na_bar * (f_ni) * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3)  * (v - e_na)) + (g_l * (v - e_l)) == 0,
+                    ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+                ], [v, n], [initial_guess(i,1);initial_guess(i,2)]);
+    
+                fprintf("v n  %f %f \n", X.v, X.n);
+    
+                syms  v1 n1
+                dv_dt = (1/c)* (-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (1-f_ni) * ((1/(1+((4 * exp(-(v1+60)/18))/((-0.1 * (v1 + 35))/(exp(-(v1 + 35)/10) - 1)))))^3) * h * (v1 - e_na)) - (g_na_bar * f_ni * ((1/(1+((4 * exp(-(v1+60)/18))/((-0.1 * (v1 + 35))/(exp(-(v1 + 35)/10) - 1)))))^3) * (v1 - e_na)) - (g_l * (v1 - e_l)));
+                dn_dt = ((-0.01 * (v1+50))/(exp(-(v1+50)/10) - 1))*(1-n1) - (0.125 * (exp(-(v1+60)/80)))*(n1);
+                
+                jacobian = zeros(2,2);
+                jacobian(1,1) = subs(diff(dv_dt, v1), {v1,n1}, {X.v,  X.n});
+                jacobian(1,2) = subs(diff(dv_dt, n1), {v1, n1}, {X.v,  X.n});
+                jacobian(2,1) = subs(diff(dn_dt, v1), {v1, n1}, {X.v,  X.n});
+                jacobian(2,2) = subs(diff(dn_dt, n1), {v1, n1}, {X.v,  X.n});
+                
+                eigen_values = double(eig(jacobian));
+                disp(eigen_values);
+            end
         end
 
     grid
 
+    return % khatam
 
 
-    % anode break
-    % figure(19)
-    %     [t r] = ode15s(@hh_i_negative_for_anode_break, [0 20], [-60 0.052932 0.596121 0.317677]);
-    %     plot(t, r(:,1));
-    % grid
+  % anode break
+    figure(19)
+        % vars
+        g_k_bar = 36;
+        e_k = -72;
+
+        g_na_bar = 120;
+        e_na = 55;
+
+        g_l = 0.3;
+        e_l = -49.401079;
+        syms v m h n
+        X = vpasolve([
+            (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+            ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+            (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
+            ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+        ], [v,m,h,n]);
+
+        v_rest = double(X.v);
+        [t r] = ode15s(@hh_i_negative_for_anode_break, [0 50], [double(X.v) double(X.m) double(X.h) double(X.n)]);
+        plot(t, r(:,1));
+    grid
+
+
+
+    syms v m h n
+    X = vpasolve([
+        3 + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0, % -i + ...
+        ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
+        (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
+        ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+    ], [v,m,h,n]);
+
+    v_h = double(X.v);
+    
+
+    % case 1
+    v20 = linspace(-70,70);
+
+    if v20 == -35
+        alpha_m = 1;
+    else
+        alpha_m = (-0.1 * (v20 + 35))./(exp(-(v20 + 35)/10) - 1);
+    end
+    beta_m = 4 * exp(-(v20 + 60)/18);
+
+    m_nullcline =  alpha_m./(alpha_m + beta_m);
+
+    figure(201)
+        n1 = get_n20(v_rest);
+        h1 = get_h20(v_rest);
+        disp("case 1")
+        disp(v_rest);
+        disp(n1);
+        disp(h1);
+        v_null_cline201 =  (((-g_k_bar * n1^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
+        hold on
+            plot(v20, 100*v_null_cline201);
+            plot(v20, 100*m_nullcline);
+        hold off
+    grid
+
+    figure(202)
+        % case 2 
+        n2 = get_n20(v_h);
+        h2 = get_h20(v_h);
+        disp("case 2")
+        disp(v_h);
+        disp(n2);
+        disp(h2);
+        v_null_cline202 = (( -3 + (-g_k_bar * n2^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
+        hold on
+            plot(v20, 100*v_null_cline202);
+            plot(v20, 100*m_nullcline);
+        hold off
+    grid
+
+
+
 end
 
 
