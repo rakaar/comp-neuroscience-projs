@@ -713,20 +713,35 @@ end
   
         iext = [];
         v_max = [];
+        g_k_bar = 36;   e_k = -72;    g_na_bar = 120;    e_na = 55;    g_l = 0.3;   e_l = -49.401079;
         hold on 
             for i=1:10
 
-                X = vpasolve([
-                    -i + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
-                    ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
-                   ], [v,m,h,n]);
+                % X = vpasolve([
+                %     -i + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
+                %     ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
+                %     ], [v,n], [-60,0.31]);
+                % h = 0.596121;
+                % F = @(x) [
+                %     i - (g_k_bar * (x(2)^4) * (x(1) - e_k))  - (g_na_bar * ((1/(1+((4 * exp(-(x(1)+60)/18))/((-0.1 * (x(1) + 35))/(exp(-(x(1) + 35)/10) - 1)))))^3) * h * (x(1) - e_na)) - (g_l * (x(1) - e_l))     ; 
+                %     ((-0.01 * (x(1)+50))/(exp(-(x(1)+50)/10) - 1))*(1-x(2)) - (0.125 * (exp(-(x(1)+60)/80)))*(x(2))
+                %     ];
+                % starting_pt = [-60;0.31];
+                % options = optimoptions('fsolve','Display','iter');
+                
+                % % options = optimoptions('fsolve','Display','off');
+                % [X,fval] = fsolve(F,starting_pt,options);
+                % disp(X)
+                 
+                
                 fprintf("I ext is %f\n",i);
-                fprintf("v n %f %f %f %f \n", X.v, X.n);
             
-                [t r] = hh2d_with_iext(i, double(X.v) + 50, double(X.n));
+                [t r] = hh2d_with_iext(i, -60, 0.3);
                 v_max = [v_max, max(r(:,1))];
                 iext = [iext, i];
-                plot(r(:,1), r(:,2));   
+                % plot(r(:,1), r(:,2));   
+                plot(t, r(:,1));
+                break;
                 
             end
         
@@ -816,8 +831,7 @@ end
 
     grid
 
-    return % khatam
-
+  
 
   % anode break
     figure(19)
@@ -1315,7 +1329,7 @@ function [t_vec, r_vec] = hh2d_with_iext(iext, v_start, n_start)
     
         h = 0.596121;
     
-        m_inf = alpha_m/(alpha_m + beta_m)
+        m_inf = alpha_m/(alpha_m + beta_m);
         result = zeros(2,1); % v,n
         result(1) = (1/c) * ( iext - (g_k_bar * (r(2)^4) * (r(1) - e_k) )  - (g_na_bar * (m_inf^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
         result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
