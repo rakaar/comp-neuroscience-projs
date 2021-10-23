@@ -3,7 +3,6 @@
 function project
 
    
-  
     v = linspace(-80, 80);
 
     % defining first set of MLE variables
@@ -154,7 +153,7 @@ function project
         hold on
             v_initial = [];
             v_max = [];
-            for step_size = 45:0.01:46
+            for step_size = 45.5:0.01:46.5
                 [t,r] = ode15s(@mle_diff_eqn,[0 300],[x(1)+step_size x(2)]);
                 v_initial = [v_initial, x(1)+step_size];
                 v_max = [v_max, max(r(:,1))];
@@ -708,49 +707,30 @@ end
         hold off
     grid
 
-    figure(17)
-
   
-        iext = [];
-        v_max = [];
-        g_k_bar = 36;   e_k = -72;    g_na_bar = 120;    e_na = 55;    g_l = 0.3;   e_l = -49.401079;
-        hold on 
-            for i=1:10
-
-                % X = vpasolve([
-                %     -i + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * ((1/(1+((4 * exp(-(v+60)/18))/((-0.1 * (v + 35))/(exp(-(v + 35)/10) - 1)))))^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
-                %     ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
-                %     ], [v,n], [-60,0.31]);
-                % h = 0.596121;
-                % F = @(x) [
-                %     i - (g_k_bar * (x(2)^4) * (x(1) - e_k))  - (g_na_bar * ((1/(1+((4 * exp(-(x(1)+60)/18))/((-0.1 * (x(1) + 35))/(exp(-(x(1) + 35)/10) - 1)))))^3) * h * (x(1) - e_na)) - (g_l * (x(1) - e_l))     ; 
-                %     ((-0.01 * (x(1)+50))/(exp(-(x(1)+50)/10) - 1))*(1-x(2)) - (0.125 * (exp(-(x(1)+60)/80)))*(x(2))
-                %     ];
-                % starting_pt = [-60;0.31];
-                % options = optimoptions('fsolve','Display','iter');
-                
-                % % options = optimoptions('fsolve','Display','off');
-                % [X,fval] = fsolve(F,starting_pt,options);
-                % disp(X)
-                 
-                
-                fprintf("I ext is %f\n",i);
-            
-                [t r] = hh2d_with_iext(i, -60, 0.3);
-                v_max = [v_max, max(r(:,1))];
-                iext = [iext, i];
-                % plot(r(:,1), r(:,2));   
-                plot(t, r(:,1));
-                break;
-                
-            end
-        
-        hold off
+    % v-n reduced model
+    figure(17)
+        v_initals = [];
+        v_maxs = [];
+        for i=1:10
+            [t r] = hh_2d_iext(i);
+            v_initals = [v_initals, i];
+            v_maxs = [v_maxs, max(r(:,1))];
+        end
+    plot(v_initals, v_maxs);
     grid
 
     figure(171)
-        plot(iext, v_max);
+    hold on
+        for i=1:5
+            [t r] = hh_2d_iext(i);
+            plot(r(:,1), 100*r(:,2));
+        end
+    hold off
     grid
+
+
+
     
     % phase plane analysis n-v with myotonia
     
@@ -889,7 +869,7 @@ end
         disp(v_rest);
         disp(n1);
         disp(h1);
-        v_null_cline201 =  (((-g_k_bar * n1^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
+        v_null_cline201 =  (((-g_k_bar * (n1^4) * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
         hold on
             plot(v20, 100*v_null_cline201);
             plot(v20, 100*m_nullcline);
@@ -904,7 +884,7 @@ end
         disp(v_h);
         disp(n2);
         disp(h2);
-        v_null_cline202 = (( -3 + (-g_k_bar * n2^4 * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
+        v_null_cline202 = (((-g_k_bar * (n2^4) * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
         hold on
             plot(v20, 100*v_null_cline202);
             plot(v20, 100*m_nullcline);
@@ -1297,48 +1277,6 @@ function result = hh_2d(t,r)
 end
 
 
-function [t_vec, r_vec] = hh2d_with_iext(iext, v_start, n_start)
-    function result = hh_2d_diffeqn(t,r)
-
-        % vars
-        g_k_bar = 36;
-        e_k = -72;
-    
-        g_na_bar = 120;
-        e_na = 55;
-    
-        g_l = 0.3;
-        e_l = -49.401079;
-    
-        c = 1;
-    
-       
-        if r(1) == -50 
-            alpha_n = 0.1;
-        else
-            alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
-        end
-        beta_n = 0.125 * exp(-(r(1) + 60)/80);
-    
-        if r(1) == -35
-            alpha_m = 1;
-        else
-            alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
-        end
-        beta_m = 4 * exp(-(r(1) + 60)/18);
-    
-        h = 0.596121;
-    
-        m_inf = alpha_m/(alpha_m + beta_m);
-        result = zeros(2,1); % v,n
-        result(1) = (1/c) * ( iext - (g_k_bar * (r(2)^4) * (r(1) - e_k) )  - (g_na_bar * (m_inf^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
-        result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
-    end
-
-    [t_vec r_vec] = ode15s(@hh_2d_diffeqn, [0 300], [v_start  n_start]);
-
-
-end
 function [t_vec, r_vec] = myotonoic_hh_2d(f_ni)
     function result = hh_2d_defective(t,r)
 
@@ -1422,6 +1360,37 @@ function [t_vec,r_vec] = myotonoic_hh(f_ni)
     
     [t_vec r_vec] = ode15s(@hh_with_problem, [0 300], [50  0.052932 0.596121 0.317677]);
 
+end
+
+function [t_vec r_vec] = hh_2d_iext(v_step)
+    function result = hh_2d_diffeqn(t,r)
+        g_k_bar = 36;  e_k = -72; g_na_bar = 120; e_na = 55; g_l = 0.3;  e_l = -49.401079; c = 1;
+
+        
+        if r(1) == -35
+            alpha_m = 1;
+        else
+            alpha_m = (-0.1 * (r(1) + 35))/(exp(-(r(1) + 35)/10) - 1);
+        end
+        beta_m = 4 * exp(-(r(1) + 60)/18);
+        m_inf = alpha_m/(alpha_m + beta_m);
+
+
+        if r(1) == -50 
+            alpha_n = 0.1;
+        else
+            alpha_n = (-0.01 * (r(1) + 50))/(exp(-(r(1) + 50)/10) - 1);
+        end
+        beta_n = 0.125 * exp(-(r(1) + 60)/80);
+
+        h = 0.596121;
+
+        result = zeros(2,1);
+        result(1) = (1/c) * ( 0 - (g_k_bar * r(2)^4 * (r(1) - e_k)) - (g_na_bar * (m_inf^3) * h * (r(1) - e_na)) - (g_l * (r(1) - e_l)) );
+        result(2) = (alpha_n * (1 - r(2))) - (beta_n * r(2));
+    end
+
+    [t_vec r_vec] = ode15s(@hh_2d_diffeqn, [0 1000], [-60+v_step 0.3]);
 end
 
 function result = hh(t,r)
