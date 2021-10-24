@@ -824,6 +824,7 @@ end
 
         g_l = 0.3;
         e_l = -49.401079;
+        c = 1;
         syms v m h n
         X = vpasolve([
             (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0,
@@ -841,7 +842,7 @@ end
 
     syms v m h n
     X = vpasolve([
-        3 + (g_k_bar * (n^4) * (v - e_k))  + (g_na_bar * (m^3) * h * (v - e_na)) + (g_l * (v - e_l)) == 0, % -i + ...
+        -3 + (-g_k_bar * (n^4) * (v - e_k))  + (-g_na_bar * (m^3) * h * (v - e_na)) + (-g_l * (v - e_l)) == 0,
         ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0,
         (0.07 * exp(-(v+60)/20))*(1-h) - (1/(exp(-(v+30)/10) + 1))*(h) == 0,
         ((-0.01 * (v+50))/(exp(-(v+50)/10) - 1))*(1-n) - (0.125 * (exp(-(v+60)/80)))*(n) == 0
@@ -850,6 +851,7 @@ end
     v_h = double(X.v);
     
 
+  
     % case 1
     v20 = linspace(-72,55);
 
@@ -858,47 +860,120 @@ end
     else
         alpha_m = (-0.1 * (v20 + 35))./(exp(-(v20 + 35)/10) - 1);
     end
-    beta_m = 4 * exp(-(v20 + 60)/18);
+    beta_m = 4 * exp(-(v20+60)/18);
+    m_nullcline = alpha_m./(alpha_m + beta_m);
 
-    m_nullcline =  alpha_m./(alpha_m + beta_m);
+    figure(203)
+            n1 = get_n(v_rest);
+            h1 = get_h(v_rest);
 
-    figure(201)
-        n1 = get_n20(v_rest);
-        h1 = get_h20(v_rest);
-        disp("case 1")
-        disp(v_rest);
-        disp(n1);
-        disp(h1);
-        v_null_cline201 =  (((-g_k_bar * (n1^4) * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
-        hold on
-            plot(v20, 100*v_null_cline201);
-            ylim([0 100]);
+            v_nullclinef = @(V) 100*((((-g_k_bar * (n1^4) * (V - e_k)) + (-g_l * (V - e_l)))/(g_na_bar * h1 * (V - e_na)))^(1/3));
+            hold on 
+                fplot(@(V) v_nullclinef(V), [-72 55]);
+                xlim([-72, 55]);
+                ylim([0, 100]);
 
-            plot(v20, 100*m_nullcline);
-            ylim([0 100]);
-        hold off
+                plot(v20, 100*m_nullcline);
+                xlim([-72, 55]);
+                ylim([0, 100]);
+            hold off
+
+
+            initial_guess = zeros(3,2);
+
+            initial_guess(1,1) = -60.1;
+            initial_guess(1,2) = 0.05;
+
+            initial_guess(2,1) = -57.1;
+            initial_guess(2,2) = 0.07;
+
+            initial_guess(3,1) = 53;
+            initial_guess(3,2) = 0.98;
+
+            for i=1:3
+                syms v m
+                X = vpasolve([
+                    (-g_k_bar * (n1^4) * (v - e_k))  + (-g_na_bar * (m^3) * h1 * (v - e_na)) + (-g_l * (v - e_l)) == 0,
+                    ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0
+                ], [v, m], [initial_guess(i,1);initial_guess(i,2)]);
+
+                
+                
+                syms  v1 m1
+                dv_dt = (1/c)* (-(g_k_bar * (n1^4) * (v1 - e_k))  - (g_na_bar * (m1^3) * h1 * (v1 - e_na)) - (g_l * (v1 - e_l)));
+                dm_dt = ((-0.1 * (v1+35))/(exp(-(v1+35)/10) -1))*(1-m1) - (4 * exp(-(v1+60)/18))*(m1);
+                
+                jacobian = zeros(2,2);
+                jacobian(1,1) = subs(diff(dv_dt, v1), {v1,m1}, {X.v,  X.m});
+                jacobian(1,2) = subs(diff(dv_dt, m1), {v1, m1}, {X.v,  X.m});
+                jacobian(2,1) = subs(diff(dm_dt, v1), {v1, m1}, {X.v,  X.m});
+                jacobian(2,2) = subs(diff(dm_dt, m1), {v1, m1}, {X.v,  X.m});
+                
+                eigen_values = double(eig(jacobian));
+                
+                fprintf("\n eigen values %f %f %s \n",eigen_values(1,1), eigen_values(2,1), get_stability(eigen_values));
+            end
+            
+    grid
+    
+  
+
+
+    figure(204)
+    n2 = get_n(v_h);
+    h2 = get_h(v_h);
+
+    v_nullclinef2 = @(V) 100*((((-g_k_bar * (n2^4) * (V - e_k)) + (-g_l * (V - e_l)))/(g_na_bar * h2 * (V - e_na)))^(1/3));
+    hold on 
+        fplot(@(V) v_nullclinef2(V), [-72 55]);
+        xlim([-72, 55]);
+        ylim([0, 100]);
+       
+        plot(v20, 100*m_nullcline);
+        xlim([-72, 55]);
+        ylim([0, 100]);
+    hold off
     grid
 
-    figure(202)
-        % case 2 
-        n2 = get_n20(v_h);
-        h2 = get_h20(v_h);
-        disp("case 2")
-        disp(v_h);
-        disp(n2);
-        disp(h2);
-        v_null_cline202 = (((-g_k_bar * (n2^4) * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
-        hold on
-            plot(v20, 100*v_null_cline202);
-            ylim([0 100]);
+    syms v m
+    X = vpasolve([
+        (-g_k_bar * (n2^4) * (v - e_k))  + (-g_na_bar * (m^3) * h2 * (v - e_na)) + (-g_l * (v - e_l)) == 0,
+        ((-0.1 * (v+35))/(exp(-(v+35)/10) -1))*(1-m) - (4 * exp(-(v+60)/18))*(m) == 0
+    ], [v, m], [53;0.98]);
 
-            plot(v20, 100*m_nullcline);
-            ylim([0 100]);
-        hold off
-    grid
+    
+    
+    syms  v1 m1
+    dv_dt = (1/c)* (-(g_k_bar * (n2^4) * (v1 - e_k))  - (g_na_bar * (m1^3) * h2 * (v1 - e_na)) - (g_l * (v1 - e_l)));
+    dm_dt = ((-0.1 * (v1+35))/(exp(-(v1+35)/10) -1))*(1-m1) - (4 * exp(-(v1+60)/18))*(m1);
+    
+    jacobian = zeros(2,2);
+    jacobian(1,1) = subs(diff(dv_dt, v1), {v1,m1}, {X.v,  X.m});
+    jacobian(1,2) = subs(diff(dv_dt, m1), {v1, m1}, {X.v,  X.m});
+    jacobian(2,1) = subs(diff(dm_dt, v1), {v1, m1}, {X.v,  X.m});
+    jacobian(2,2) = subs(diff(dm_dt, m1), {v1, m1}, {X.v,  X.m});
+    
+    eigen_values = double(eig(jacobian));
+    fprintf("\n eigen values %f %f %s \n",eigen_values(1,1), eigen_values(2,1), get_stability(eigen_values));
 
+end
 
+function n20 = get_n(v)
+    if v == -50 
+        alpha_n = 0.1;
+    else
+        alpha_n = (-0.01 * (v + 50))/(exp(-(v + 50)/10) - 1);
+    end
+    beta_n = 0.125 * exp(-(v + 60)/80);
 
+    n20 = alpha_n/(alpha_n + beta_n);
+end
+
+function h20 = get_h(v)
+    alpha_h = 0.07 * exp(-(v + 60)/20);
+    beta_h = 1/(1 + exp(-(v+30)/10));
+    
+    h20 = alpha_h/(alpha_h + beta_h);
 end
 
 function stability_status = get_stability(eigen_values)
@@ -1490,16 +1565,3 @@ function result = hh_i_negative_for_anode_break(t,r)
     result(4) = (alpha_n * (1 - r(4))) - (beta_n * r(4));
 end
 
-function n20 = get_n20(v)
-    alpha_n = (-0.01 * (v + 50))/(exp(-(v + 50)/10) - 1);
-    beta_n = 0.125 * exp(-(v + 60)/80);
-
-    n20 = alpha_n/(alpha_n + beta_n);
-end
-
-function h20 = get_h20(v)
-    alpha_h = 0.07 * exp(-(v + 60)/20);
-    beta_h = 1/(1 + exp(-(v+30)/10));
-
-    h20 = alpha_h/(alpha_h + beta_h);
-end
