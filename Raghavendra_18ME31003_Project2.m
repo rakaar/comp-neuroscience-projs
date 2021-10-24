@@ -1,8 +1,5 @@
-
-
 function project
 
-   
     v = linspace(-80, 80);
 
     % defining first set of MLE variables
