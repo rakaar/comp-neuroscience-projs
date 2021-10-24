@@ -851,7 +851,7 @@ end
     
 
     % case 1
-    v20 = linspace(-70,70);
+    v20 = linspace(-72,55);
 
     if v20 == -35
         alpha_m = 1;
@@ -872,7 +872,10 @@ end
         v_null_cline201 =  (((-g_k_bar * (n1^4) * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h1 * (v20 - e_na))).^(1/3);
         hold on
             plot(v20, 100*v_null_cline201);
+            ylim([0 100]);
+
             plot(v20, 100*m_nullcline);
+            ylim([0 100]);
         hold off
     grid
 
@@ -887,7 +890,10 @@ end
         v_null_cline202 = (((-g_k_bar * (n2^4) * (v20 - e_k))  +  (-g_l * (v20 - e_l)))./(g_na_bar * h2 * (v20 - e_na))).^(1/3);
         hold on
             plot(v20, 100*v_null_cline202);
+            ylim([0 100]);
+
             plot(v20, 100*m_nullcline);
+            ylim([0 100]);
         hold off
     grid
 
