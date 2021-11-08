@@ -1,58 +1,7 @@
 function project
     stimulus = load('data_cn_project_iii_a17.mat', 'Stimulus').Stimulus;
 
-    % Question - 3
-    neuron_num = 1;
-    bin_sizes = [10,20,50, 100, 200, 500];
-    all_spike_times = load('data_cn_project_iii_a17.mat', 'All_Spike_Times').All_Spike_Times;
-    sample = [];
-    sample = zeros(50, 200);
-    for i=1:50
-        spike_times = all_spike_times{neuron_num,i};
-        len_of_spike_array = size(spike_times,2);
-        for s=1:len_of_spike_array
-            index = fix(spike_times(s)*10)+1;
-            sample(i,index) = sample(i,index) + 1;
-
-        end
-
-    end
-
- 
-    mean_plot = [];
-    variance_plot = [];
-    for i=1:200
-        mean = 0;
-        variance = 0;
-        for j=1:50
-            mean = mean + sample(j, i);
-            mean = mean/(50*0.1);
-        end
-
-        for j=1:50
-            variance = variance + (sample(j,i) - mean)^2;
-            variance = variance/(50*0.1);
-        end
-        mean_plot = [mean_plot, mean];
-        variance_plot = [variance_plot, variance];
-    end
-    time_axis = transpose(linspace(0,20,20*10));
-
-    % figure(31)
-    %     scatter(time_axis, mean_plot);
-    % grid
-
-    % figure(32)
-    %     scatter(time_axis, variance_plot);
-    % grid
-
-    figure(31)
-        scatter(mean_plot, variance_plot);
-    grid
-    
-  
-   
-    return % khatam
+    % return % khatam
 
     % Question - 1
     tau_plot = transpose(linspace(-50,50,101));
@@ -102,5 +51,72 @@ function project
          grid
  
      end
+
+
+     % Question - 3
+    colors = ['r', 'b', 'g', 'c'];
+    bin_sizes = [0.01,0.02,0.05, 0.1, 0.2, 0.5];
+    all_spike_times = load('data_cn_project_iii_a17.mat', 'All_Spike_Times').All_Spike_Times;
+    
+        for b=1:6
+            mean_plot = zeros(4, 20*(1/bin_sizes(b)));
+            variance_plot = zeros(4, 20*(1/bin_sizes(b)));
+    
+            for neuron_num=1:4
+                sample = zeros(50, 20*(1/bin_sizes(b)));
+                for i=1:50
+                    spike_times = all_spike_times{neuron_num,i};
+                    len_of_spike_array = size(spike_times,2);
+                for s=1:len_of_spike_array
+                        index = fix(spike_times(s)*(1/bin_sizes(b)))+1;
+                        sample(i,index) = sample(i,index) + 1;
+        
+                    end
+        
+                
+        
+                end
+        
+                for i=1:20*(1/bin_sizes(b))
+                    
+                    mean = 0;
+                    variance = 0;
+                    for j=1:50
+                        mean = mean + sample(j, i);
+                    end
+                
+                    mean = mean/(50);
+        
+                    mean_plot(neuron_num, i) = mean;
+                    
+        
+                    for j=1:50
+                        variance = variance + (sample(j,i) - mean)^2;
+                        
+                    end
+                    variance_plot(neuron_num, i) = variance/50;
+                
+                    
+                end
+            end
+            
+            figure(30+b)
+                for k=1:4
+                    hold on
+                        scatter(mean_plot(k,:), variance_plot(k,:),[], colors(k));
+                        plot(linspace(0,max(variance_plot(k,:))), linspace(0,max(variance_plot(k,:))));
+                        xlim([0 max(mean_plot(k,:))+0.5]);ylim([0 max(variance_plot(k,:))]+0.5)
+
+                        
+                        disp(max(mean_plot(k,:)))
+                    hold off
+                end
+            grid
+        
+        end
    
-     end
+     
+    
+    
+    
+    end
