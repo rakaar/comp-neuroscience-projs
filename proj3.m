@@ -67,7 +67,8 @@ function project
                 for i=1:50
                     spike_times = all_spike_times{neuron_num,i};
                     len_of_spike_array = size(spike_times,2);
-                for s=1:len_of_spike_array
+                    
+                    for s=1:len_of_spike_array
                         index = fix(spike_times(s)*(1/bin_sizes(b)))+1;
                         sample(i,index) = sample(i,index) + 1;
         
@@ -78,39 +79,20 @@ function project
                 end
         
                 for i=1:20*(1/bin_sizes(b))
-                    
-                    mean = 0;
-                    variance = 0;
-                    for j=1:50
-                        mean = mean + sample(j, i);
-                    end
-                
-                    mean = mean/(50);
-        
-                    mean_plot(neuron_num, i) = mean;
-                    
-        
-                    for j=1:50
-                        variance = variance + (sample(j,i) - mean)^2;
-                        
-                    end
-                    variance_plot(neuron_num, i) = variance/50;
-                
-                    
+                    mean_plot(neuron_num, i) = mean(sample(:,i));
+                    variance_plot(neuron_num, i) = var(sample(:,i));
                 end
             end
             
             figure(30+b)
-                for k=1:4
-                    hold on
-                        scatter(mean_plot(k,:), variance_plot(k,:),[], colors(k));
-                        plot(linspace(0,max(variance_plot(k,:))), linspace(0,max(variance_plot(k,:))));
-                        xlim([0 max(mean_plot(k,:))+0.5]);ylim([0 max(variance_plot(k,:))]+0.5)
-
-                        
-                        disp(max(mean_plot(k,:)))
-                    hold off
-                end
+                 hold on
+                    for k=1:4
+                            scatter(mean_plot(k,:), variance_plot(k,:),[], colors(k));
+                    end
+                    max_var = max(variance_plot, [], 'all');
+                    yisx = linspace(0, max_var);
+                    plot(yisx, yisx, 'color', 'k');
+                hold off
             grid
         
         end
