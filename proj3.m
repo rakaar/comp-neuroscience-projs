@@ -101,32 +101,63 @@ function project
     
 
     % Question - 4
-    neuron_num = 1;
     spike_triggered_avg = zeros(4,100);
-    total_num_of_spikes = 0;
-    for i=1:50
-        spike_times = all_spike_times{neuron_num,i};
-        len_of_spike_array = size(spike_times,2);
-        
-        for j=1:len_of_spike_array
-            if spike_times(j) <= 15
-                total_num_of_spikes = total_num_of_spikes + 1;
-                time_of_spike_in_ms = spike_times(j)*1000;
-                for k=1:100
-                  
-                    if time_of_spike_in_ms-(101-k) >=1
-                        spike_triggered_avg(neuron_num, k) = spike_triggered_avg(neuron_num, k) +  stimulus(1,floor(time_of_spike_in_ms-(101-k)));
+    stimulus = load('data_cn_project_iii_a17.mat', 'Stimulus').Stimulus;
+
+    for neuron_num=1:4
+    % neuron_num = 1;
+        total_num_of_spikes = 0;
+        for i=1:50
+            spike_times = all_spike_times{neuron_num,i};
+            len_of_spike_array = size(spike_times,2);
+            
+            for j=1:len_of_spike_array
+                if spike_times(j) <= 15
+                    total_num_of_spikes = total_num_of_spikes + 1;
+                    time_of_spike_in_ms = spike_times(j)*1000;
+
+                    % disp("errr belo")
+                    % disp(size(spike_triggered_avg));
+
+                    for k=1:100
+                    
+                        if time_of_spike_in_ms-(101-k) >=1
+                            spike_triggered_avg(neuron_num, k) = spike_triggered_avg(neuron_num, k) +  stimulus(1,floor(time_of_spike_in_ms-(101-k)));
+                        end
                     end
                 end
             end
         end
+        spike_triggered_avg(neuron_num,:) = spike_triggered_avg(neuron_num,:)./total_num_of_spikes; %  4 x 100
     end
+   
+    spike_triggered_avg = transpose(spike_triggered_avg);
     
-    spike_triggered_avg = spike_triggered_avg./total_num_of_spikes;
+    Css_column = zeros(100,1);%100 x 1
+
+    for tau=1:100
+        n = 0;
+        for i=1:20000
+            if (i+tau >= 1) & (i+tau <= 20000)
+                n = n+1;
+                Css_column(tau,1) = Css_column(tau,1)  + (stimulus(1,i)*stimulus(1,i+tau));
+            end
+        
+        end
+
+        Css_column(tau,1) = Css_column(tau,1)/n;
+    end
+
+    Css_matrix = Css_column * transpose(Css_column);
+    Css_matrix_inverse = inv(Css_matrix);
+
     
-    figure(40)
-        plot(linspace(1,100),spike_triggered_avg);
-    grid
+    h_t = Css_matrix_inverse*spike_triggered_avg;
+
+    disp(h_t);
+    % figure(40)
+    %     plot(linspace(1,100),spike_triggered_avg);
+    % grid
     
 
     
