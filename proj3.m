@@ -2,7 +2,7 @@ function project
     stimulus = load('data_cn_project_iii_a17.mat', 'Stimulus').Stimulus;
 
     % return % khatam
-
+ 
     % Question - 1
     tau_plot = transpose(linspace(-50,50,101));
     autocorr_plot = [];
@@ -53,7 +53,7 @@ function project
      end
 
 
-     % Question - 3
+    % Question - 3
     colors = ['r', 'b', 'g', 'c'];
     bin_sizes = [0.01,0.02,0.05, 0.1, 0.2, 0.5];
     all_spike_times = load('data_cn_project_iii_a17.mat', 'All_Spike_Times').All_Spike_Times;
@@ -99,6 +99,36 @@ function project
    
      
     
+
+    % Question - 4
+    neuron_num = 1;
+    spike_triggered_avg = zeros(4,100);
+    total_num_of_spikes = 0;
+    for i=1:50
+        spike_times = all_spike_times{neuron_num,i};
+        len_of_spike_array = size(spike_times,2);
+        
+        for j=1:len_of_spike_array
+            if spike_times(j) <= 15
+                total_num_of_spikes = total_num_of_spikes + 1;
+                time_of_spike_in_ms = spike_times(j)*1000;
+                for k=1:100
+                  
+                    if time_of_spike_in_ms-(101-k) >=1
+                        spike_triggered_avg(neuron_num, k) = spike_triggered_avg(neuron_num, k) +  stimulus(1,floor(time_of_spike_in_ms-(101-k)));
+                    end
+                end
+            end
+        end
+    end
+    
+    spike_triggered_avg = spike_triggered_avg./total_num_of_spikes;
+    
+    figure(40)
+        plot(linspace(1,100),spike_triggered_avg);
+    grid
+    
+
     
     
     end
