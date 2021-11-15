@@ -105,8 +105,8 @@ function project
         opts.Display = 'Off';
         opts.StartPoint = [0.5 0.5, 0.5];
 
-        [fitresult, gof] = fit( x1, y1, ft, opts );
-        plot(fitresult,x1, y1);
+        [fitresult1, gof] = fit( x1, y1, ft, opts );
+        plot(fitresult1,x1, y1);
         hold off
     grid
 
@@ -121,8 +121,8 @@ function project
         opts.StartPoint = [0.5 0.5, 0.5];
 
        
-        [fitresult, gof] = fit( x2, y2, ft, opts );
-        plot(fitresult,x2, y2);
+        [fitresult2, gof] = fit( x2, y2, ft, opts );
+        plot(fitresult2,x2, y2);
         hold off
     grid
 
@@ -137,8 +137,8 @@ function project
         opts.StartPoint = [0.5 0.5, 0.5];
 
        
-        [fitresult, gof] = fit( x3, y3, ft, opts );
-        plot(fitresult,x3, y3);
+        [fitresult3, gof] = fit( x3, y3, ft, opts );
+        plot(fitresult3,x3, y3);
         hold off
     grid
 
@@ -153,11 +153,55 @@ function project
         opts.StartPoint = [0.5 0.5, 0.5];
 
 
-        [fitresult, gof] = fit( x4, y4, ft, opts );
-        plot(fitresult,x4, y4);
+        [fitresult4, gof] = fit( x4, y4, ft, opts );
+        plot(fitresult4,x4, y4);
         hold off
     grid
 
+
+    %% Question 6
+    % predicton - y , f
+    % y
+
+
+   
+    y1 = conv(stimulus(15001:20000), h_t(:,1));
+    y1 = y1(1,1:5000);
+    
+    y2 = conv(stimulus(15001:20000), h_t(:,2));
+    y2 = y2(1,1:5000);
+    
+    y3 = conv(stimulus(15001:20000), h_t(:,3));
+    y3 = y3(1,1:5000);
+    
+    y4 = conv(stimulus(15001:20000), h_t(:,4));
+    y4 = y4(1,1:5000);
+
+    disp("????")
+    disp(fitresult1);
+    % disp(fitresult1.a); % .a, .b, .c
+
+    % prediction - lambda
+    pred1 = (fitresult1.a)./(1+exp(-(fitresult1.b).*(y1-(fitresult1.c))));
+    figure(61)
+        scatter(PSTH(1, 15001:20000),pred1);
+    grid
+
+    pred2 = (fitresult2.a)./(1+exp(-(fitresult2.b).*(y2-(fitresult2.c))));
+    figure(62)
+        scatter(PSTH(2, 15001:20000),pred2);
+    grid
+
+    pred3 = (fitresult3.a)./(1+exp(-(fitresult3.b).*(y3-(fitresult3.c))));
+    figure(63)
+        scatter(PSTH(3, 15001:20000),pred3);
+    grid
+
+    pred4 = (fitresult4.a)./(1+exp(-(fitresult4.b).*(y4-(fitresult4.c))));
+    figure(64)
+        scatter(PSTH(4, 15001:20000),pred4);
+    grid
+    
 
 
    
