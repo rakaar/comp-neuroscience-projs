@@ -218,9 +218,34 @@ function project
     c4 = corrcoef(PSTH(4, 15001:20000), pred4);
     disp("R square for Neuron 4")
     disp(c4(2)^2)
+
+    %% Question - 7
+    q = 0.1;
+    neuron_num = 1;
+    t = randperm(19901,8);
+    
+    spike_segments = cell(8,50);
+    for rep = 1:50
+        spikes = All_Spike_Times{neuron_num,rep};
+        for i = 1:8
+            spike_segments{i,rep} = spikes(spikes>=t(i)/1000&spikes<(t(i)+100)/1000);
+        end
+    end
     
 
+    confusion_matrix = zeros(8,8);
 
+    for i=1:8
+        for realiz=1:50
+            closest_stimuli_index = find_closest_stimuli_index(i, realiz, q, spike_segments);
+            % append to that stimulus
+            confusion_matrix(i, closest_stimuli_index) = confusion_matrix(i, closest_stimuli_index) + 1;
+        end
+    end
+
+    confusion_matrix = confusion_matrix/50;
+    disp("confusion matrix")
+    disp(confusion_matrix);
    
 
     
@@ -229,4 +254,45 @@ function project
 
 
 
+end
+
+function closest_index = find_closest_stimuli_index(i, realiz, q, spike_segments)
+    distances = zeros(1,8);
+    for s=1:8
+        for r = 1:50
+            if (r == realiz && s == i)
+                continue
+            end
+            distances(s) = distances(s) + VPSDM(spike_segments{i,realiz},spike_segments{s,r},q);
+        end
+    end
+
+    [~,k] = min(distances);
+
+    closest_index = k;
+end
+
+function d=VPSDM(tli,tlj,q)
+    nspi=length(tli);
+    nspj=length(tlj);
+    
+    if q==0
+       d=abs(nspi-nspj);
+       return
+    elseif q==Inf
+       d=nspi+nspj;
+       return
+    end
+    
+    scr=zeros(nspi+1,nspj+1);
+    scr(:,1)=(0:nspi)';
+    scr(1,:)=(0:nspj);
+    if(nspi && nspj)
+       for i=2:nspi+1
+          for j=2:nspj+1
+             scr(i,j)=min([scr(i-1,j)+1 scr(i,j-1)+1 scr(i-1,j-1)+q*abs(tli(i-1)-tlj(j-1))]);
+          end
+       end
+    end
+    d=scr(nspi+1,nspj+1);
 end
