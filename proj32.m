@@ -280,7 +280,7 @@ function project
                 end
                 
                 % figure(70 + n)                    
-                %     plot(q,avg_q_for_neuron)
+                %     plot(log10(q),avg_q_for_neuron);
                 % grid
         end
         
