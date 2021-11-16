@@ -246,6 +246,11 @@ function project
     confusion_matrix = confusion_matrix/50;
     disp("confusion matrix")
     disp(confusion_matrix);
+
+
+    mutual_info_h = find_mutual_info(confusion_matrix);
+    disp("mutual info")
+    disp(mutual_info_h);
    
 
     
@@ -254,6 +259,19 @@ function project
 
 
 
+end
+
+function mutual_info = find_mutual_info(confusion_matrix)
+    m = 0;
+    for i=1:8
+        for j=1:8
+            if(confusion_matrix(i,j)~=0)
+                m = m + ((confusion_matrix(i,j))* (1/8)) * log2((confusion_matrix(i,j))/sum(confusion_matrix(:,j)/8)) ; %p(y/x)* p(x) * log(p(x,y)/ p(x)p(y))  = p(y/x)* p(x) * log((p(y/x))/p(y)) [bcoz p(x,y)/p(x) = p(y/x)]  and p(y) =  for all x sum(p(x,y)) =  
+            end
+        end
+    end
+
+    mutual_info = m;
 end
 
 function closest_index = find_closest_stimuli_index(i, realiz, q, spike_segments)
