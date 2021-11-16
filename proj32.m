@@ -187,20 +187,37 @@ function project
         scatter(PSTH(1, 15001:20000),pred1);
     grid
 
+    c1 = corrcoef(PSTH(1, 15001:20000), pred1);
+    disp("R square for Neuron 1")
+    disp(c1(2)^2)
+
+
+    
     pred2 = (fitresult2.a)./(1+exp(-(fitresult2.b).*(y2-(fitresult2.c))));
     figure(62)
         scatter(PSTH(2, 15001:20000),pred2);
     grid
+    
+    c2 = corrcoef(PSTH(2, 15001:20000), pred2);
+    disp("R square for Neuron 2")
+    disp(c2(2)^2)
 
     pred3 = (fitresult3.a)./(1+exp(-(fitresult3.b).*(y3-(fitresult3.c))));
     figure(63)
         scatter(PSTH(3, 15001:20000),pred3);
     grid
 
+    c3 = corrcoef(PSTH(3, 15001:20000), pred3);
+    disp("R square for Neuron 3")
+    disp(c3(2)^2)
+    
     pred4 = (fitresult4.a)./(1+exp(-(fitresult4.b).*(y4-(fitresult4.c))));
     figure(64)
         scatter(PSTH(4, 15001:20000),pred4);
     grid
+    c4 = corrcoef(PSTH(4, 15001:20000), pred4);
+    disp("R square for Neuron 4")
+    disp(c4(2)^2)
     
 
 
