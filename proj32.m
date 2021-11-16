@@ -37,19 +37,21 @@ function project
    
     spike_triggered_avg = transpose(spike_triggered_avg); % 100 x 4
   
-    for i=1:4
-        figure(400+i)
-            plot(linspace(1,100), spike_triggered_avg(:, i));
+    
+        
+        figure(430)
+        hold on
+            for i=1:4
+                plot(linspace(1,100), spike_triggered_avg(:, i));
+            end
+        hold off
         grid
-    end
+    
     Rxx = autocorr(Stimulus, 99);
     Css = zeros(100,100);
     Css = toeplitz(Rxx);
     for i=1:4
-        % h(i,100:-1:1)=(Css\sta(i,:)')';
         h_t(100:-1:1,i) = (Css\spike_triggered_avg(:,i));
-        %  disp(toeplitz(autocorr(stimulus, 99)))
-        % disp(spike_triggered_avg(:,i));
         figure(40+i)
             plot(linspace(1, 100), h_t(:,i));
         grid
@@ -220,45 +222,69 @@ function project
     disp(c4(2)^2)
 
     %% Question - 7
-    q = 0.1;
-    neuron_num = 1;
-    t = randperm(19901,8);
-    
-    spike_segments = cell(8,50);
-    for rep = 1:50
-        spikes = All_Spike_Times{neuron_num,rep};
-        for i = 1:8
-            spike_segments{i,rep} = spikes(spikes>=t(i)/1000&spikes<(t(i)+100)/1000);
+    % q = 0.1;
+    q = [0 0.001 0.01 0.1 1 10 100];
+    MI = zeros(4,5,length(q));
+
+    for iter=1:5
+        disp("i is ")
+        disp(iter)
+        disp("-------------------------------------------------")
+        t = randperm(19901,8);
+
+        for n = 1:4
+            disp("n is ")
+            disp(n)
+            spike_segments = cell(8,50);
+            for rep = 1:50
+                spikes = All_Spike_Times{n,rep};
+                for i = 1:8
+                    spike_segments{i,rep} = spikes(spikes>=t(i)/1000&spikes<(t(i)+100)/1000);
+                end
+            end
+
+            for m=1:length(q)
+                disp('q is')
+                disp(q(m))
+                confusion_matrix = zeros(8,8);
+                
+                for i=1:8
+                    for realiz=1:50
+                        closest_stimuli_index = find_closest_stimuli_index(i, realiz, q, spike_segments);
+                        % append to that stimulus
+                        confusion_matrix(i, closest_stimuli_index) = confusion_matrix(i, closest_stimuli_index) + 1;
+                    end
+                end
+
+                confusion_matrix = confusion_matrix/50;
+                MI(n,iter,m) = MI(n,iter,m) + find_mutual_info(confusion_matrix);
+                
+            end
+
         end
+
+
     end
+
     
 
-    confusion_matrix = zeros(8,8);
-
-    for i=1:8
-        for realiz=1:50
-            closest_stimuli_index = find_closest_stimuli_index(i, realiz, q, spike_segments);
-            % append to that stimulus
-            confusion_matrix(i, closest_stimuli_index) = confusion_matrix(i, closest_stimuli_index) + 1;
+        
+        for n = 1:4
+            fprintf("neuron %f \f", n);
+            avg_q_for_neuron = zeros(1, length(q));
+                for i=1:length(q)
+                    avg_q1 = sum(MI(n, :, i))/5;
+                    avg_q_for_neuron(i) = avg_q1;
+                    fprintf("for value of q - %f, MI are \n", q(i));
+                    disp(MI(n,:,i));   
+                end
+                
+                % figure(70 + n)                    
+                %     plot(q,avg_q_for_neuron)
+                % grid
         end
-    end
-
-    confusion_matrix = confusion_matrix/50;
-    disp("confusion matrix")
-    disp(confusion_matrix);
-
-
-    mutual_info_h = find_mutual_info(confusion_matrix);
-    disp("mutual info")
-    disp(mutual_info_h);
-   
-
+        
     
-    
-    
-
-
-
 end
 
 function mutual_info = find_mutual_info(confusion_matrix)

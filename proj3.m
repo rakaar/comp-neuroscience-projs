@@ -1,7 +1,7 @@
 function project
     stimulus = load('data_cn_project_iii_a17.mat', 'Stimulus').Stimulus;
 
-    % return % khatam
+    
  
     % Question - 1
     tau_plot = transpose(linspace(-50,50,101));
@@ -99,93 +99,7 @@ function project
    
      
     
-
-    
-    
-    
-    %% question - 5
-    % for 1 neuron
-    stimulus = load('data_cn_project_iii_a17.mat', 'Stimulus').Stimulus;
-
-    stimulus_trim = transpose(stimulus(1,[1:15000])); % 15000 x 1
-    neuron_num = 1;
-    for neuron_num=1:4
-
-                disp("h_t(:,neuron_num)")
-                disp(size(h_t(:,neuron_num)))
-
-                y_t = conv(stimulus_trim, h_t(:,neuron_num)); 
-                % disp("shape of y t")
-                % disp(size(y_t));
-                % disp("size of h_t : 1")
-                % disp(size(h_t(:,1)))
-                disp("shape of y t")
-                disp(size(y_t));
-                y_t_trim = y_t(1:15000); 
-
-                neuron_stimulus_rate = zeros(15000,1);
-                for i=1:50
-                    spike_times = all_spike_times{neuron_num,i};
-                    len_of_spike_array = size(spike_times,2);
-                    for s=1:len_of_spike_array
-                        if spike_times(s) <= 15
-                            % spike_times(s)*1000 as per this time, depends index of addition
-                            index = fix(spike_times(s)*1000)+1;
-                            neuron_stimulus_rate(index) = neuron_stimulus_rate(index) + 1;
-                        end
-
-                    end
-                end
-
-                neuron_stimulus_rate = neuron_stimulus_rate./(50*0.001);
-
-                figure(500 + neuron_num)
-                %  fitingfnc =  @(A, x) (A(1) + A(2).*x + A(3).*(x.^2) + A(4).*(x.^3) + A(5).*(x.^4)+ A(6).*(x.^5) + A(7).*(x.^6) +  A(8).*(x.^7));
-                %     A0 = [5,5,5,5,1,1,1,1]; %// Initial values fed into the iterative algorithm
-                    
-                % fitingfnc =   @(A, x) (A(1) ./ exp(-(x - A(2).^2)./A(3)));
-                % A0 = [1,1,1]
-                
-                    % A_fit = nlinfit(y_t_trim, neuron_stimulus_rate, fitingfnc, A0);
-                    % disp(A_fit)
-                hold on
-                    scatter(y_t_trim, neuron_stimulus_rate);
-                    % fplot(@(x) (A_fit(1) / exp(-(x - A_fit(2)^2)./A_fit(3))));
-                    % fplot(@(x) (A_fit(1) + A_fit(2).*x + A_fit(3).*(x.^2) + A_fit(4).*(x.^3) + A_fit(5).*(x.^4)+ A_fit(6).*(x.^5) + A_fit(7).*(x.^6) +  A_fit(8).*(x.^7)));
-
-                    % plot(y_t_trim,neuron_stimulus_rate, f);
-                hold off
-                grid
-    end
-    
-   
-
-    % fitting
-    % sigfunc =  @(A, x)(A(1) ./ (1 + exp(-A(2)*(x-A(3)))));
-    % A0 = [0.1,0.1,0.1]; %// Initial values fed into the iterative algorithm
-    % A_fit = nlinfit(y_t_trim, neuron_stimulus_rate, sigfunc, A0);
-
-    % disp(A_fit);
-
-    % disp(A_fit(3));
-    % disp(A_fit(1));
-    % disp(A_fit(2));
-
-    % figure(51)
-    % hold on
-    %     scatter(y_t_trim, neuron_stimulus_rate);
-    %     fplot(@(x) (A_fit(1) / (1 + exp(-A_fit(2)*(x-A_fit(3))))));
-    % hold off
-    % grid
-
-
-
-
-    % figure(52)
-    %     scatter(transpose(linspace(1,15000,15000)), neuron_stimulus_rate);
-    % grid
-
-    
+  
     
 end
     
