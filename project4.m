@@ -12,12 +12,10 @@ function project
     
     PSTH = zeros(1,1000);
     for j=1:1000
-
         for i=1:100
             PSTH(1,j) = PSTH(1,j) + nonhomopp(i,j); 
         end
         PSTH(1,j) = PSTH(1,j)/(100*0.001);
-
     end
 
     figure(1)
@@ -44,28 +42,43 @@ function project
 
 
     %% generate voltage for SP neuron
-    voltage_for_sp = zeros(1,1800); % 15 stimuli * (250 ms stimulus played +  50 ms gap)
-    voltage_for_sp(1) = -0.070;
+    voltage_for_sp_total = []; %- length 1800 -  15 stimuli * (250 ms stimulus played +  50 ms gap)
     for i=1:15
+        voltage_for_sp_for_single_stimulus = zeros(1,300);
+        voltage_for_sp_for_single_stimulus(1,1) = -0.070;
+       
         spike_for_S = binornd(1, 10/1000, 1,1000);
-        spike_for_D = binornd(1, 2.5/1000, 1,1000)
+        spike_for_D = binornd(1, 2.5/1000, 1,1000);
         if i == 8
             spike_for_S = binornd(1, 2.5/1000, 1,1000);
             spike_for_D = binornd(1, 10/1000, 1,1000);
         end
-        % for k=(i-1)*300 + 1: i*250
-        %     if (k
-        %         continue
-        %     end
-        %     voltage_for_sp(k) = gS(t-1)*weight_S_to_SP*spike_for_S(1, (k-1)/300) + gD(t-1)*weight_D_to_SP*xD(t-1);
-        % end
+       
+        k_t1 = get_kernel(spike_for_S);
+        g_t1 = conv(k_t1, spike_for_S);
+        g_t1 = g_t1(1,1:300);
 
-        % for k=i*250:i*300
-            
-        % end
+        k_t2 = get_kernel(spike_for_D);
+        g_t2 = conv(k_t2, spike_for_D);
+        g_t2 = g_t2(1,1:300);
 
+        spike_for_S = spike_for_S(1,1:300);
+        spike_for_D = spike_for_D(1, 1:300);
+
+        voltage_from_t_is_2 = g_t1.*(weight_S_to_SP*spike_for_S) + g_t2.*(weight_D_to_SP*spike_for_D);
+        
+        for ind=2:300
+            voltage_for_sp_for_single_stimulus(1, ind) = voltage_from_t_is_2(1, ind-1);
+        end
+
+        
+        voltage_for_sp_total = [voltage_for_sp_total, voltage_for_sp_for_single_stimulus];
 
     end 
+
+    figure(3)
+        stem(voltage_for_sp_total);
+    grid
    
 
     % from  voltage to spike train for SP 
