@@ -161,6 +161,9 @@ function project
 
     voltage_for_L4 = g_t3.*(weight_S_to_L4*spike_train_of_thalamus_S) + g_t4.*(weight_D_to_L4*spike_train_of_thalamus_D) + g_t5.*(weight_SP_to_L4*spike_train_for_SP);
     
+    figure(51)
+        stem(voltage_for_L4);
+    grid
     % decrease 10% for every voltage to account for leak 
     for i=1:1800
         voltage_for_L4(1,i) = voltage_for_L4(1,i) - (0.1*voltage_for_L4(1,i));
