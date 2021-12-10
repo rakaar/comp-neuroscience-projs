@@ -44,9 +44,6 @@ function project
     %% generate voltage for SP neuron
     voltage_for_sp_total = []; %- length 1800 -  15 stimuli * (250 ms stimulus played +  50 ms gap)
     for i=1:15
-        voltage_for_sp_for_single_stimulus = zeros(1,300);
-        voltage_for_sp_for_single_stimulus(1,1) = -0.070;
-       
         spike_for_S = binornd(1, 10/1000, 1,1000);
         spike_for_D = binornd(1, 2.5/1000, 1,1000);
         if i == 8
@@ -54,24 +51,47 @@ function project
             spike_for_D = binornd(1, 10/1000, 1,1000);
         end
        
+        voltage_for_sp_for_single_stimulus = zeros(1,300);
+        voltage_for_sp_for_single_stimulus(1,1) = -0.070;
+        
+        
         k_t1 = get_kernel(spike_for_S);
         g_t1 = conv(k_t1, spike_for_S);
-        g_t1 = g_t1(1,1:300);
+        g_t1 = g_t1(1,1:250);
 
         k_t2 = get_kernel(spike_for_D);
         g_t2 = conv(k_t2, spike_for_D);
-        g_t2 = g_t2(1,1:300);
+        g_t2 = g_t2(1,1:250);
 
-        spike_for_S = spike_for_S(1,1:300);
-        spike_for_D = spike_for_D(1, 1:300);
-
-        voltage_from_t_is_2 = g_t1.*(weight_S_to_SP*spike_for_S) + g_t2.*(weight_D_to_SP*spike_for_D);
+        spike_for_S = spike_for_S(1,1:250);
+        spike_for_D = spike_for_D(1, 1:250);
         
-        for ind=2:300
-            voltage_for_sp_for_single_stimulus(1, ind) = voltage_from_t_is_2(1, ind-1);
+        voltage_when_stimulus = g_t1.*(weight_S_to_SP*spike_for_S) + g_t2.*(weight_D_to_SP*spike_for_D);
+        
+        for ind=2:251
+            voltage_for_sp_for_single_stimulus(1, ind) = voltage_when_stimulus(1, ind-1);
         end
 
+        % 50 ms no stimulus
+        spike_for_S = binornd(1, 0.5/1000, 1,1000);
+        spike_for_D = binornd(1, 0.5/1000, 1,1000);
         
+        spike_for_S = spike_for_S(1,1:50);
+        spike_for_D = spike_for_S(1,1:50);
+
+        k_t1 = get_kernel(spike_for_S);
+        g_t1 = conv(k_t1, spike_for_S);
+        g_t1 = g_t1(1,1:50);
+
+        k_t2 = get_kernel(spike_for_D);
+        g_t2 = conv(k_t2, spike_for_D);
+        g_t2 = g_t2(1,1:50);
+
+        voltage_when_no_stimulus = g_t1.*(weight_S_to_SP*spike_for_S) + g_t2.*(weight_D_to_SP*spike_for_D);
+        for ind=252:300
+            voltage_for_sp_for_single_stimulus(1, ind) = voltage_when_no_stimulus(1, ind-251);
+        end
+
         voltage_for_sp_total = [voltage_for_sp_total, voltage_for_sp_for_single_stimulus];
 
     end 
@@ -80,20 +100,73 @@ function project
         stem(voltage_for_sp_total);
     grid
    
+    % decrease 10% for every voltage to account for leak 
+    for i=1:1800
+        voltage_for_sp_total(1,i) = voltage_for_sp_total(1,i) - (0.1*voltage_for_sp_total(1,i));
+    end
+    figure(5)
+        stem(voltage_for_sp_total);
+    grid
 
     % from  voltage to spike train for SP 
+    voltage_for_sp_total = decrease_voltage_for_20ms_after_spike(voltage_for_sp_total);
 
+    spike_train_for_SP = zeros(1,1800); 
+    for i=1:1800
+        if voltage_for_sp_total(1,i) >= 0.05
+            spike_train_for_SP(1,i) = 1;
+        end
+    end
+
+    % ------- spike train for SP neuron ------
+    figure(8)
+        stem(spike_train_for_SP);
+    grid
 
     % L4 voltage
+    % from S, from D, from SP
+
+    
 
     % L4 spike train
 
 end
 
+function  new_voltage_values = decrease_voltage_for_20ms_after_spike(voltage_values)
+    spike_after_decreasing_voltage = zeros(1, 1800);
+    nearest_spike_time = 0;
+
+    % variables for v_delta
+    beta = 5; tau = 2;
+
+    for i=1:1800
+        if voltage_values(1,i) < 0.05
+            spike_after_decreasing_voltage(1,i) = voltage_values(1,i);
+            continue
+        end
+
+        if voltage_values(1,i) >= 0.05
+            nearest_spike_time = i;
+            for j=i+1:i+20
+                if j < 1800
+                    spike_after_decreasing_voltage(1,j) = voltage_values(1,j)*(1 - ( beta * exp(-(j-nearest_spike_time)/tau) ))  ; 
+                end
+            end
+        end
+
+        i = j;
+        
+    end
+
+
+    new_voltage_values = spike_after_decreasing_voltage;
+end
+
+
 function kernel = get_kernel(spike_train)
     neuron_kernel = zeros(1,1000);
     nearest_spike_time = 0;
-    for i=1:1000
+    for i=1:length(spike_train)
         if spike_train(1,i) == 1
             nearest_spike_time = i;
         end
