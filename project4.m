@@ -150,17 +150,15 @@ function project
 
     spike_train_of_thalamus_S = spike_train_of_thalamus_S(1,1:1800);
     spike_train_of_thalamus_D = spike_train_of_thalamus_D(1,1:1800);
-    % fprintf("\n length(g_t3) %d \n", length(g_t3));
-    % fprintf("\n length(g_t4) %d \n", length(g_t4));
-    % fprintf("\n length(g_t5) %d \n", length(g_t5));
-
-    % fprintf("\n length(spike_train_of_thalamus_S) %d \n", length(spike_train_of_thalamus_S));
-    % fprintf("\n length(spike_train_of_thalamus_D) %d \n", length(spike_train_of_thalamus_D));
-    % fprintf("\n length(spike_train_for_SP) %d \n", length(spike_train_for_SP));
-
-
+    
     voltage_for_L4 = g_t3.*(weight_S_to_L4*spike_train_of_thalamus_S) + g_t4.*(weight_D_to_L4*spike_train_of_thalamus_D) + g_t5.*(weight_SP_to_L4*spike_train_for_SP);
     
+    % shifting by 1ms for that synaltic delay
+    for i=2:1800
+        voltage_for_L4(1, 1802-i) = voltage_for_L4(1,1801-i);
+    end
+    voltage_for_L4(1,i) = -0.070;
+
     figure(51)
         stem(voltage_for_L4);
     grid
