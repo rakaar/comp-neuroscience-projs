@@ -25,6 +25,13 @@ function project
     % -------- Short Term Plasticity ------
 
     %% generate spike times for S and D neurons
+    PSTH_for_SP = [];
+    PSTH_for_L4 = [];
+    % ---- 50 times for PSTH
+
+    for p=1:50
+
+        fprintf("\n iter num %d \n", p);
     no_stimulus_for_S = binornd(1, 0.5/1000, 1,1000); 
     S_stimulus_for_thalamus_S = binornd(1, 10/1000, 1,1000); 
     D_stimulus_for_thalamus_S = binornd(1, 2.5/1000, 1,1000); 
@@ -121,24 +128,25 @@ function project
     for i=1:1800
         voltage_for_sp_total(1,i) = voltage_for_sp_total(1,i) - (0.1*voltage_for_sp_total(1,i));
     end
-    figure(50)
-        plot(voltage_for_sp_total);
-        title("voltage before decrease 0.05 but after account for 10% leak")
-    grid
+    % figure(50)
+    %     plot(voltage_for_sp_total);
+    %     title("voltage before decrease 0.05 but after account for 10% leak")
+    % grid
 
     % from  voltage to spike train for SP 
     [voltage_for_sp_total, spike_train_for_SP] = decrease_voltage_for_20ms_after_spike(voltage_for_sp_total);
 
-    figure(51)
-        plot(voltage_for_sp_total);
-        title("voltage after decrease 0.05")
-    grid
+    PSTH_for_SP = [PSTH_for_SP, spike_train_for_SP];
+    % figure(51)
+    %     plot(voltage_for_sp_total);
+    %     title("voltage after decrease 0.05")
+    % grid
 
     % ------- spike train for SP neuron ------
-    figure(52)
-        plot(spike_train_for_SP);
-        title('spike train for SP');
-    grid
+    % figure(52)
+    %     plot(spike_train_for_SP);
+    %     title('spike train for SP');
+    % grid
 
     % L4 voltage
     % from S, from D, from SP
@@ -169,24 +177,60 @@ function project
     voltage_for_L4 = g_t3.*(weight_S_to_L4*spike_train_of_thalamus_S) + g_t4.*(weight_D_to_L4*spike_train_of_thalamus_D) + g_t5.*(weight_SP_to_L4*spike_train_for_SP);
     
    
-    figure(71)
-        plot(voltage_for_L4);
-        title("voltage before decrease 0.05 but after account for 10% leak")
-    grid
+    % figure(71)
+    %     plot(voltage_for_L4);
+    %     title("voltage before decrease 0.05 but after account for 10% leak")
+    % grid
 
     % from  voltage to spike train for SP 
     [voltage_for_L4, spike_train_for_L4] = decrease_voltage_for_20ms_after_spike(voltage_for_L4);
 
-    figure(72)
-        plot(voltage_for_L4);
-        title("voltage after decrease 0.05")
-    grid
+    PSTH_for_L4 = [PSTH_for_L4, spike_train_for_L4];
+    % figure(72)
+    %     plot(voltage_for_L4);
+    %     title("voltage after decrease 0.05")
+    % grid
     
-    figure(73)
-        plot(spike_train_for_L4);
-        title("spike train for L4")
+    % figure(73)
+    %     plot(spike_train_for_L4);
+    %     title("spike train for L4")
+    % grid
+
+    end
+
+
+
+    reshaped_PSTH_SP = reshape(PSTH_for_SP, [50, 1800]);
+    reshaped_PSTH_L4 = reshape(PSTH_for_L4, [50, 1800]);
+
+    calculated_PSTH_SP = zeros(1,1800);
+    calculated_PSTH_L4 = zeros(1,1800);
+
+    for i=1:1800
+        total_spikes = 0
+        for j=1:50
+            total_spikes = total_spikes + reshaped_PSTH_SP(j,i);
+        end
+        calculated_PSTH_SP(1,i) = total_spikes/50;
+    end
+
+    for i=1:1800
+        total_spikes = 0
+        for j=1:50
+            total_spikes = total_spikes + reshaped_PSTH_L4(j,i);
+        end
+        calculated_PSTH_L4(1,i) = total_spikes/50;
+    end
+
+    figure(11)
+        plot(calculated_PSTH_SP);
+        title("PSTH of SP");
     grid
 
+    figure(12)
+        plot(calculated_PSTH_L4);
+        title("PSTH of L4");
+    grid
 end
 
 function  [new_voltage_values spike_train] = decrease_voltage_for_20ms_after_spike(voltage_values)
