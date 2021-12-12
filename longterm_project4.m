@@ -11,9 +11,14 @@ function longterm_projecct4
         weight_S_to_L4 = 0.02;
         weight_D_to_L4 = 0.02;
 
+        a_LTP = 0.015;
+        tau_LTP = 13;
+
+        a_LTD = 0.021;
+        tau_LTD = 20;
 
 
-        for p=1:18 % for 9 minutes for now
+        for p=1:180 % for 9 minutes for now
             stimulus_decider = randi([1,100]);
             spike_train_of_thalamus_S = [];
             spike_train_of_thalamus_D = [];
@@ -124,8 +129,58 @@ function longterm_projecct4
         [voltage_for_L4, spike_train_for_L4] = decrease_voltage_for_20ms_after_spike(voltage_for_L4);
 
         % TODO
-        % - add current weight in array
+        % 
         % - change weights at the end for the next stimuli
+
+        weights_from_S_to_L4 = [weights_from_S_to_L4, weight_S_to_L4];
+        weights_from_D_to_L4 = [weights_from_D_to_L4, weight_D_to_L4];
+        weights_from_SP_to_L4 = [weights_from_SP_to_L4, weight_SP_to_L4];
+
+        % spike_train_for_L4
+        % spike_train_for_SP
+        % spike_train_of_thalamus_S
+        % spike_train_of_thalamus_D
+
+        
+        % what hapens to connections from SP to L4\
+        % to know weights effect
+        voltage_L4_due_to_SP = g_t5.*(weight_SP_to_L4*spike_train_for_SP);
+        [voltage_L4_due_to_SP, spike_train_L4_due_to_SP] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_SP);
+        effective_presyn_spikes_in_SP = 0;
+        for i=1:300
+            if spike_train_for_SP(1,i) == 1
+                for j=i+1:i+10 % checking if any post synaptic spike caused within 10ms
+                    if j < 300
+                        if spike_train_L4_due_to_SP(1,j) == 1
+                            effective_presyn_spikes_in_SP = effective_presyn_spikes_in_SP + 1;
+                            break
+                        end
+                    end
+                end
+            end
+        end
+
+        fprintf("\n eff is %d \n", effective_presyn_spikes_in_SP);
+        
+        if effective_presyn_spikes_in_SP >= 150
+            weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (a_LTP * exp(-(10)/tau_LTP)) );
+        else
+            weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (-a_LTD * exp(-(10)/tau_LTD)) );
+        end
+
+        if weight_SP_to_L4 <= 0.001
+            weight_SP_to_L4 = 0.0001;
+        end
+
+        if weight_SP_to_L4 >= 0.11
+            weight_SP_to_L4 = 0.11;
+        end
+
+
+
+
+        % read figure
+        % what happens to connections from S, D to L4
 
 
         end % 1800 Stimulus - 9 m
