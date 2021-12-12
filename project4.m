@@ -18,9 +18,9 @@ function project
         PSTH(1,j) = PSTH(1,j)/(100*0.001);
     end
 
-    figure(1)
-        plot(linspace(1,1000,1000), PSTH);
-    grid
+    % figure(1)
+    %     plot(linspace(1,1000,1000), PSTH);
+    % grid
 
     % -------- Short Term Plasticity ------
 
@@ -106,31 +106,29 @@ function project
 
     end 
 
-    figure(3)
-        stem(voltage_for_sp_total);
-    grid
+    
    
     % decrease 10% for every voltage to account for leak 
     for i=1:1800
         voltage_for_sp_total(1,i) = voltage_for_sp_total(1,i) - (0.1*voltage_for_sp_total(1,i));
     end
-    figure(5)
-        stem(voltage_for_sp_total);
+    figure(50)
+        plot(voltage_for_sp_total);
+        title("voltage before decrease 0.05 but after account for 10% leak")
     grid
 
     % from  voltage to spike train for SP 
-    voltage_for_sp_total = decrease_voltage_for_20ms_after_spike(voltage_for_sp_total);
+    [voltage_for_sp_total, spike_train_for_SP] = decrease_voltage_for_20ms_after_spike(voltage_for_sp_total);
 
-    spike_train_for_SP = zeros(1,1800); 
-    for i=1:1800
-        if voltage_for_sp_total(1,i) >= 0.05
-            spike_train_for_SP(1,i) = 1;
-        end
-    end
+    figure(51)
+        plot(voltage_for_sp_total);
+        title("voltage after decrease 0.05")
+    grid
 
     % ------- spike train for SP neuron ------
-    figure(8)
+    figure(52)
         stem(spike_train_for_SP);
+        title('spike train for SP');
     grid
 
     % L4 voltage
@@ -159,54 +157,53 @@ function project
     end
     voltage_for_L4(1,i) = -0.070;
 
-    figure(51)
-        stem(voltage_for_L4);
-    grid
+    
     % decrease 10% for every voltage to account for leak 
     for i=1:1800
         voltage_for_L4(1,i) = voltage_for_L4(1,i) - (0.1*voltage_for_L4(1,i));
     end
-    figure(52)
-        stem(voltage_for_L4);
+   
+    figure(71)
+        plot(voltage_for_L4);
+        title("voltage before decrease 0.05 but after account for 10% leak")
     grid
 
     % from  voltage to spike train for SP 
-    voltage_for_L4 = decrease_voltage_for_20ms_after_spike(voltage_for_L4);
+    [voltage_for_L4, spike_train_for_L4] = decrease_voltage_for_20ms_after_spike(voltage_for_L4);
 
-    figure(54)
-        stem(voltage_for_L4);
+    figure(72)
+        plot(voltage_for_L4);
+        title("voltage after decrease 0.05")
     grid
-    spike_train_for_L4 = zeros(1,1800); 
-    for i=1:1800
-        if voltage_for_L4(1,i) >= 0.05
-            spike_train_for_L4(1,i) = 1;
-        end
-    end
-
-    figure(55)
-        stem(spike_train_for_L4);
+    
+    figure(73)
+        plot(spike_train_for_L4);
+        title("spike train for L4")
     grid
 
 end
 
-function  new_voltage_values = decrease_voltage_for_20ms_after_spike(voltage_values)
-    spike_after_decreasing_voltage = zeros(1, 1800);
+function  [new_voltage_values spike_train] = decrease_voltage_for_20ms_after_spike(voltage_values)
+    voltage_after_decreasing = zeros(1, 1800);
     nearest_spike_time = 0;
+
+    actual_spike = zeros(1, 1800);
 
     % variables for v_delta
     beta = 5; tau = 2;
 
     for i=1:1800
         if voltage_values(1,i) < 0.05
-            spike_after_decreasing_voltage(1,i) = voltage_values(1,i);
+            voltage_after_decreasing(1,i) = voltage_values(1,i);
             continue
         end
 
         if voltage_values(1,i) >= 0.05
             nearest_spike_time = i;
-            for j=i+1:i+20
+            for j=i:i+19
                 if j < 1800
-                    spike_after_decreasing_voltage(1,j) = voltage_values(1,j)*(1 - ( beta * exp(-(j-nearest_spike_time)/tau) ))  ; 
+                    voltage_after_decreasing(1,j) = voltage_values(1,j)*(1 - ( beta * exp(-(j-nearest_spike_time)/tau) ))  ; 
+                    actual_spike(1,j) = 1;
                 end
             end
         end
@@ -216,7 +213,8 @@ function  new_voltage_values = decrease_voltage_for_20ms_after_spike(voltage_val
     end
 
 
-    new_voltage_values = spike_after_decreasing_voltage;
+    new_voltage_values = voltage_after_decreasing;
+    spike_train = actual_spike;
 end
 
 
