@@ -145,7 +145,7 @@ function longterm_projecct4
         %-------- connections from SP to L4
         voltage_L4_due_to_SP = g_t5.*(weight_SP_to_L4*spike_train_for_SP);
         [voltage_L4_due_to_SP, spike_train_L4_due_to_SP] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_SP);
-        arr_of_delta_ts = get_post_minus_pre_array(spike_train_for_SP, spike_train_L4_due_to_SP); 
+        arr_of_delta_ts = get_post_minus_pre_array(spike_train_for_SP, spike_train_for_L4); 
         for i=1:length(arr_of_delta_ts)
             if arr_of_delta_ts(1,i) > 0
                 weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (a_LTP * exp(-arr_of_delta_ts(1,i)/tau_LTP)) );
@@ -166,12 +166,9 @@ function longterm_projecct4
         voltage_L4_due_to_S = g_t3.*(weight_S_to_L4*spike_train_of_thalamus_S);
         [voltage_L4_due_to_S, spike_train_L4_due_to_S] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_S);
         
-        arr_of_delta_ts = get_post_minus_pre_array(spike_train_of_thalamus_S, spike_train_L4_due_to_S);
+        arr_of_delta_ts = get_post_minus_pre_array(spike_train_of_thalamus_S, spike_train_for_L4);
 
-        disp("Arr coming?")
-        disp(max(spike_train_of_thalamus_S));
-        disp(max(spike_train_L4_due_to_S));
-        disp(arr_of_delta_ts);
+        
         for i=1:length(arr_of_delta_ts)
             if arr_of_delta_ts(1,i) > 0
                 weight_S_to_L4 = weight_S_to_L4 * ( 1 + (a_LTP * exp(-arr_of_delta_ts(1,i)/tau_LTP)) );
@@ -180,8 +177,7 @@ function longterm_projecct4
             end
         end
 
-        
-        fprintf("\n  weight s - l4 %f  \n ", weight_S_to_L4);
+
         % make sure weight doesn't cross limits
         if weight_S_to_L4 <= 0.001
             weight_S_to_L4 = 0.0001;
@@ -194,7 +190,7 @@ function longterm_projecct4
         voltage_L4_due_to_D = g_t4.*(weight_D_to_L4*spike_train_of_thalamus_D);
         [voltage_L4_due_to_D, spike_train_L4_due_to_D] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_D);
         
-        arr_of_delta_ts = get_post_minus_pre_array(spike_train_of_thalamus_D, spike_train_L4_due_to_D); 
+        arr_of_delta_ts = get_post_minus_pre_array(spike_train_of_thalamus_D, spike_train_for_L4); 
         for i=1:length(arr_of_delta_ts)
             if arr_of_delta_ts(1,i) > 0
                 weight_D_to_L4 = weight_D_to_L4 * ( 1 + (a_LTP * exp(-arr_of_delta_ts(1,i)/tau_LTP)) );
