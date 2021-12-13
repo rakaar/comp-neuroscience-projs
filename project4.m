@@ -203,25 +203,36 @@ function project
     reshaped_PSTH_SP = reshape(PSTH_for_SP, [50, 1800]);
     reshaped_PSTH_L4 = reshape(PSTH_for_L4, [50, 1800]);
 
-    calculated_PSTH_SP = zeros(1,1800);
-    calculated_PSTH_L4 = zeros(1,1800);
+    calculated_PSTH_SP = zeros(1,180);
+    calculated_PSTH_L4 = zeros(1,180);
 
-    for i=1:1800
+    for i=1:180
         total_spikes = 0
-        for j=1:50
-            total_spikes = total_spikes + reshaped_PSTH_SP(j,i);
+
+        for k=(i-1)*10 + 1: (i-1)*10 + 10
+            for j=1:50
+                total_spikes = total_spikes + reshaped_PSTH_SP(j,k);
+            end
         end
-        calculated_PSTH_SP(1,i) = total_spikes/50;
+
+        
+        calculated_PSTH_SP(1,i) = total_spikes/(50*0.01);
     end
 
-    for i=1:1800
+    for i=1:180
         total_spikes = 0
-        for j=1:50
-            total_spikes = total_spikes + reshaped_PSTH_L4(j,i);
+
+        for k=(i-1)*10 + 1: (i-1)*10 + 10
+            for j=1:50
+                total_spikes = total_spikes + reshaped_PSTH_L4(j,k);
+            end
         end
-        calculated_PSTH_L4(1,i) = total_spikes/50;
+
+        
+        calculated_PSTH_L4(1,i) = total_spikes/(50*0.01);
     end
 
+    
     figure(11)
         plot(calculated_PSTH_SP);
         title("PSTH of SP");
