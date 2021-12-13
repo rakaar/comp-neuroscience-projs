@@ -18,7 +18,7 @@ function longterm_projecct4
         tau_LTD = 20;
 
 
-        for p=1:180 % for 9 minutes for now
+        for p=1:50 % for 9 minutes for now
             stimulus_decider = randi([1,100]);
             spike_train_of_thalamus_S = [];
             spike_train_of_thalamus_D = [];
@@ -142,48 +142,121 @@ function longterm_projecct4
         % spike_train_of_thalamus_D
 
         
-        % what hapens to connections from SP to L4\
-        % to know weights effect
+        %-------- connections from SP to L4
         voltage_L4_due_to_SP = g_t5.*(weight_SP_to_L4*spike_train_for_SP);
         [voltage_L4_due_to_SP, spike_train_L4_due_to_SP] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_SP);
-        effective_presyn_spikes_in_SP = 0;
-        for i=1:300
-            if spike_train_for_SP(1,i) == 1
-                for j=i+1:i+10 % checking if any post synaptic spike caused within 10ms
-                    if j < 300
-                        if spike_train_L4_due_to_SP(1,j) == 1
-                            effective_presyn_spikes_in_SP = effective_presyn_spikes_in_SP + 1;
-                            break
-                        end
-                    end
-                end
+        arr_of_delta_ts = get_post_minus_pre_array(spike_train_for_SP, spike_train_L4_due_to_SP); 
+        for i=1:length(arr_of_delta_ts)
+            if arr_of_delta_ts(1,i) > 0
+                weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (a_LTP * exp(-arr_of_delta_ts(1,i)/tau_LTP)) );
+            else
+                weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (-a_LTD * exp(arr_of_delta_ts(1,i)/tau_LTD)) );
             end
         end
-
-        fprintf("\n eff is %d \n", effective_presyn_spikes_in_SP);
-        
-        if effective_presyn_spikes_in_SP >= 150
-            weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (a_LTP * exp(-(10)/tau_LTP)) );
-        else
-            weight_SP_to_L4 = weight_SP_to_L4 * ( 1 + (-a_LTD * exp(-(10)/tau_LTD)) );
-        end
-
+        % make sure weight doesn't cross limits
         if weight_SP_to_L4 <= 0.001
             weight_SP_to_L4 = 0.0001;
         end
-
         if weight_SP_to_L4 >= 0.11
             weight_SP_to_L4 = 0.11;
         end
 
 
+        %-------- connections from S to L4
+        voltage_L4_due_to_S = g_t3.*(weight_S_to_L4*spike_train_of_thalamus_S);
+        [voltage_L4_due_to_S, spike_train_L4_due_to_S] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_S);
+        
+        arr_of_delta_ts = get_post_minus_pre_array(spike_train_of_thalamus_S, spike_train_L4_due_to_S);
+
+        disp("Arr coming?")
+        disp(max(spike_train_of_thalamus_S));
+        disp(max(spike_train_L4_due_to_S));
+        disp(arr_of_delta_ts);
+        for i=1:length(arr_of_delta_ts)
+            if arr_of_delta_ts(1,i) > 0
+                weight_S_to_L4 = weight_S_to_L4 * ( 1 + (a_LTP * exp(-arr_of_delta_ts(1,i)/tau_LTP)) );
+            else
+                weight_S_to_L4 = weight_S_to_L4 * ( 1 + (-a_LTD * exp(arr_of_delta_ts(1,i)/tau_LTD)) );
+            end
+        end
+
+        
+        fprintf("\n  weight s - l4 %f  \n ", weight_S_to_L4);
+        % make sure weight doesn't cross limits
+        if weight_S_to_L4 <= 0.001
+            weight_S_to_L4 = 0.0001;
+        end
+        if weight_S_to_L4 >= 0.4
+            weight_S_to_L4 = 0.4;
+        end
+
+        %-------- connections from D to L4
+        voltage_L4_due_to_D = g_t4.*(weight_D_to_L4*spike_train_of_thalamus_D);
+        [voltage_L4_due_to_D, spike_train_L4_due_to_D] =  decrease_voltage_for_20ms_after_spike(voltage_L4_due_to_D);
+        
+        arr_of_delta_ts = get_post_minus_pre_array(spike_train_of_thalamus_D, spike_train_L4_due_to_D); 
+        for i=1:length(arr_of_delta_ts)
+            if arr_of_delta_ts(1,i) > 0
+                weight_D_to_L4 = weight_D_to_L4 * ( 1 + (a_LTP * exp(-arr_of_delta_ts(1,i)/tau_LTP)) );
+            else
+                weight_D_to_L4 = weight_D_to_L4 * ( 1 + (-a_LTD * exp(arr_of_delta_ts(1,i)/tau_LTD)) );
+            end
+        end
+        % make sure weight doesn't cross limits
+        if weight_D_to_L4 <= 0.001
+            weight_D_to_L4 = 0.0001;
+        end
+        if weight_D_to_L4 >= 0.4
+            weight_D_to_L4 = 0.4;
+        end
 
 
-        % read figure
-        % what happens to connections from S, D to L4
+
+
 
 
         end % 1800 Stimulus - 9 m
+
+
+
+        figure(11)
+            plot(weights_from_S_to_L4);
+            title("weights from S to L4");
+        grid
+
+        figure(12)
+            plot(weights_from_D_to_L4);
+            title("weights from D to L4");
+        grid
+
+        figure(13)
+            plot(weights_from_SP_to_L4);
+            title("weights from SP to L4");
+        grid
+end
+
+function delta_ts_arr = get_post_minus_pre_array(presyn_arr, postsyn_arr)
+    pre_syn_times = [];
+    post_syn_times = [];
+    for i=1:length(presyn_arr)
+        if presyn_arr(1,i) == 1
+            pre_syn_times = [pre_syn_times, i];
+        end
+    end
+
+    for i=1:length(postsyn_arr)
+        if postsyn_arr(1,i) == 1
+            post_syn_times = [post_syn_times, i];
+        end
+    end
+
+    smallest_length = min(length(pre_syn_times), length(post_syn_times));
+    diff_arr = [];
+    for i=1:smallest_length
+        diff_arr = [diff_arr, post_syn_times(i) - pre_syn_times(i)];
+    end
+
+    delta_ts_arr = diff_arr;
 end
 
 function  [new_voltage_values spike_train] = decrease_voltage_for_20ms_after_spike(voltage_values)
