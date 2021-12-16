@@ -62,8 +62,7 @@ function project
             spike_for_D = binornd(1, 10/1000, 1,1000);
         end
        
-        spike_train_of_thalamus_S = [spike_train_of_thalamus_S, spike_for_S];
-        spike_train_of_thalamus_D = [spike_train_of_thalamus_D, spike_for_D];
+
 
         voltage_for_sp_for_single_stimulus = [];
         
@@ -80,13 +79,17 @@ function project
 
 
         spike_for_S = spike_for_S(1,1:250);
-        spike_for_S = shift_by_2(spike_for_S);
         spike_for_D = spike_for_D(1, 1:250);
+
+
+        spike_train_of_thalamus_S = [spike_train_of_thalamus_S, spike_for_S];
+        spike_train_of_thalamus_D = [spike_train_of_thalamus_D, spike_for_D];
+      
+        spike_for_S = shift_by_2(spike_for_S);
         spike_for_D = shift_by_2(spike_for_D);
 
         
-        spike_train_of_thalamus_S = [spike_train_of_thalamus_S, spike_for_S];
-        spike_train_of_thalamus_D = [spike_train_of_thalamus_D, spike_for_D];
+        
 
         voltage_when_stimulus = g_t1.*(weight_S_to_SP*spike_for_S) + g_t2.*(weight_D_to_SP*spike_for_D);
         voltage_for_sp_for_single_stimulus = [voltage_for_sp_for_single_stimulus, voltage_when_stimulus];
@@ -97,9 +100,12 @@ function project
         spike_for_D = binornd(1, 0.5/1000, 1,1000);
         
         spike_for_S = spike_for_S(1,1:50);
-        spike_for_S = shift_by_2(spike_for_S);
+        spike_for_D = spike_for_D(1,1:50);
 
-        spike_for_D = spike_for_S(1,1:50);
+        spike_train_of_thalamus_S = [spike_train_of_thalamus_S, spike_for_S];
+        spike_train_of_thalamus_D = [spike_train_of_thalamus_D, spike_for_D];
+
+        spike_for_S = shift_by_2(spike_for_S);
         spike_for_D = shift_by_2(spike_for_D);
 
 
@@ -207,7 +213,7 @@ function project
     calculated_PSTH_L4 = zeros(1,180);
 
     for i=1:180
-        total_spikes = 0
+        total_spikes = 0;
 
         for k=(i-1)*10 + 1: (i-1)*10 + 10
             for j=1:50

@@ -1,7 +1,7 @@
 function longterm_projecct4
 
         weights_from_S_to_L4 = [];
-        weights_from_D_to_L4 = [];
+        weights_from_D_to_L4 = [];  
         weights_from_SP_to_L4 = [];
 
         weight_S_to_SP = 0.2;
@@ -18,7 +18,7 @@ function longterm_projecct4
         tau_LTD = 20;
 
 
-        for p=1:50 % for 9 minutes for now
+        for p=1:1800 % for 9 minutes for now
             stimulus_decider = randi([1,100]);
             spike_train_of_thalamus_S = [];
             spike_train_of_thalamus_D = [];
