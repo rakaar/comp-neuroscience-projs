@@ -103,7 +103,7 @@ function spike_train = non_homo_poison(spike_rate, period)
     rng('shuffle');
     for i=1:period
             x = rand;
-            if x < 1 - exp(-(spike_rate(1,i) * 0.001))
+            if x <= 1 - exp(-(spike_rate(1,i) * 0.001))
                 data(1,i) = 1;
             end
     end
