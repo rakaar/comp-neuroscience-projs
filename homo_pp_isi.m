@@ -22,7 +22,7 @@ function project
     end
     isi(1) = [];
     figure(102)
-        plot(isi);
+        hist(isi);
         title('isi');
     grid
 
@@ -41,7 +41,7 @@ function project
         end
     end
     figure(103)
-        plot(isi);
+        hist(isi);
         title('isi');
     grid
 
