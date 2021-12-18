@@ -69,20 +69,22 @@ function project
         
         
         k_t1 = get_kernel(spike_for_S);
+        k_t1 = shift_by_1(k_t1);
         g_t1 = conv(k_t1, spike_for_S);
         g_t1 = g_t1(1,1:250);
-        g_t1 = shift_by_2(g_t1);
+        g_t1 = shift_by_1(g_t1);
 
         k_t2 = get_kernel(spike_for_D);
+        k_t2 = shift_by_1(k_t2);
         g_t2 = conv(k_t2, spike_for_D);
         g_t2 = g_t2(1,1:250);
-        g_t2 = shift_by_2(g_t2);
+        g_t2 = shift_by_1(g_t2);
 
 
         spike_for_S = spike_for_S(1,1:250);
-        spike_for_S = shift_by_2(spike_for_S);
+        spike_for_S = shift_by_1(spike_for_S);
         spike_for_D = spike_for_D(1, 1:250);
-        spike_for_D = shift_by_2(spike_for_D);
+        spike_for_D = shift_by_1(spike_for_D);
 
         
         spike_train_of_thalamus_S = [spike_train_of_thalamus_S, spike_for_S];
@@ -97,21 +99,23 @@ function project
         spike_for_D = binornd(1, 0.5/1000, 1,1000);
         
         spike_for_S = spike_for_S(1,1:50);
-        spike_for_S = shift_by_2(spike_for_S);
-
-        spike_for_D = spike_for_S(1,1:50);
-        spike_for_D = shift_by_2(spike_for_D);
-
+        spike_for_D = spike_for_D(1,1:50);
 
         k_t1 = get_kernel(spike_for_S);
+        k_t1 = shift_by_1(k_t1);
         g_t1 = conv(k_t1, spike_for_S);
         g_t1 = g_t1(1,1:50);
-        g_t1 = shift_by_2(g_t1);
+        g_t1 = shift_by_1(g_t1);
 
         k_t2 = get_kernel(spike_for_D);
+        k_t2 = shift_by_1(k_t2);
         g_t2 = conv(k_t2, spike_for_D);
         g_t2 = g_t2(1,1:50);
-        g_t2 = shift_by_2(g_t2);
+        g_t2 = shift_by_1(g_t2);
+
+        
+        spike_for_S = shift_by_1(spike_for_S);
+        spike_for_D = shift_by_1(spike_for_D);
 
 
         voltage_when_no_stimulus = g_t1.*(weight_S_to_SP*spike_for_S) + g_t2.*(weight_D_to_SP*spike_for_D);
@@ -151,27 +155,30 @@ function project
     % L4 voltage
     % from S, from D, from SP
     k_t3 = get_kernel2(spike_train_of_thalamus_S);
+    k_t3 = shift_by_1(k_t3);
     g_t3 = conv(k_t3, spike_train_of_thalamus_S);
     g_t3 = g_t3(1,1:1800);
-    g_t3 = shift_by_2(g_t3);
+    g_t3 = shift_by_1(g_t3);
 
     k_t4 = get_kernel(spike_train_of_thalamus_D);
+    k_t4 = shift_by_1(k_t4);
     g_t4 = conv(k_t4, spike_train_of_thalamus_D);
     g_t4 = g_t4(1,1:1800);
-    g_t4 = shift_by_2(g_t4);
+    g_t4 = shift_by_1(g_t4);
 
     
     k_t5 = get_kernel(spike_train_for_SP);
+    k_t5 = shift_by_1(k_t5);
     g_t5 = conv(k_t5, spike_train_for_SP);
     g_t5 = g_t5(1,1:1800);
-    g_t5 = shift_by_2(g_t5);
+    g_t5 = shift_by_1(g_t5);
 
 
     spike_train_of_thalamus_S = spike_train_of_thalamus_S(1,1:1800);
-    spike_train_of_thalamus_S = shift_by_2(spike_train_of_thalamus_S);
+    spike_train_of_thalamus_S = shift_by_1(spike_train_of_thalamus_S);
 
     spike_train_of_thalamus_D = spike_train_of_thalamus_D(1,1:1800);
-    spike_train_of_thalamus_D = shift_by_2(spike_train_of_thalamus_D);
+    spike_train_of_thalamus_D = shift_by_1(spike_train_of_thalamus_D);
 
     
     voltage_for_L4 = g_t3.*(weight_S_to_L4*spike_train_of_thalamus_S) + g_t4.*(weight_D_to_L4*spike_train_of_thalamus_D) + g_t5.*(weight_SP_to_L4*spike_train_for_SP);
@@ -278,11 +285,11 @@ function  [new_voltage_values spike_train] = decrease_voltage_for_20ms_after_spi
     spike_train = actual_spike;
 end
 
-function shifted_arr = shift_by_2(arr)
+function shifted_arr = shift_by_1(arr)
     len = length(arr);
     new_arr = zeros(1, len);
-    for i=3:len
-        new_arr(1,i) = arr(1, i-2); 
+    for i=2:len
+        new_arr(1,i) = arr(1, i-1); 
     end
 
     shifted_arr = new_arr;
