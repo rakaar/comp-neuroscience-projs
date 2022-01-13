@@ -15,8 +15,15 @@ function project
         tau_LTD = 20;
         
         voltage_SP = [];
+        voltage_L4 = [];
 
         for i=1:600 % 3 mins
+
+            voltage_SP_for_single_stimulus = [];
+            spike_for_S_for_single_stimulus = [];
+            spike_for_D_for_single_stimulus = [];
+
+
             stimulus_decider = randi([1,100]);
             spike_train_of_thalamus_S = [];
             spike_train_of_thalamus_D = [];
@@ -37,17 +44,21 @@ function project
             spike_for_D = spike_for_D(1,1:50);
 
          
+            
+            spike_for_S_for_single_stimulus = [spike_for_S_for_single_stimulus, spike_for_S];
+            spike_for_D_for_single_stimulus = [spike_for_D_for_single_stimulus, spike_for_D];
 
 
+            g_t_S1 = get_g_t(spike_for_S);
+            g_t_D1 = get_g_t(spike_for_D);
 
-            g_t_S = get_g_t(spike_for_S);
-            g_t_D = get_g_t(spike_for_D);
+            g_t_S1 = g_t_S1(1,1:50);
+            g_t_D1 = g_t_D1(1,1:50);
 
-            g_t_S = g_t_S(1,1:50);
-            g_t_D = g_t_D(1,1:50);
-
-            v_sp = weight_S_to_SP*shift_1(g_t_S).*shift_1(spike_for_S) + weight_D_to_SP*shift_1(g_t_D).*shift_1(spike_for_D);
+            v_sp = weight_S_to_SP*shift_1(g_t_S1).*shift_1(spike_for_S) + weight_D_to_SP*shift_1(g_t_D1).*shift_1(spike_for_D);
             voltage_SP = [voltage_SP, v_sp];
+            voltage_SP_for_single_stimulus = [voltage_SP_for_single_stimulus, v_sp];
+
 
             % 250 ms gap
             spike_for_S = non_homo_poison(0.5, 1000);
@@ -56,34 +67,71 @@ function project
             spike_for_S = spike_for_S(1,1:250);
             spike_for_D = spike_for_D(1,1:250);
 
+            spike_for_S_for_single_stimulus = [spike_for_S_for_single_stimulus, spike_for_S];
+            spike_for_D_for_single_stimulus = [spike_for_D_for_single_stimulus, spike_for_D];
 
-            g_t_S = get_g_t(spike_for_S);
-            g_t_D = get_g_t(spike_for_D);
 
 
-            g_t_S = g_t_S(1,1:250);
-            g_t_D = g_t_D(1,1:250);
+
+            g_t_S2 = get_g_t(spike_for_S);
+            g_t_D2 = get_g_t(spike_for_D);
+
+
+            g_t_S2 = g_t_S2(1,1:250);
+            g_t_D2 = g_t_D2(1,1:250);
             
-
-
-          v_sp = weight_S_to_SP*shift_1(g_t_S).*shift_1(spike_for_S) + weight_D_to_SP*shift_1(g_t_D).*shift_1(spike_for_D);
-          voltage_SP = [voltage_SP, v_sp];
+            v_sp = weight_S_to_SP*shift_1(g_t_S2).*shift_1(spike_for_S) + weight_D_to_SP*shift_1(g_t_D2).*shift_1(spike_for_D);
+            voltage_SP = [voltage_SP, v_sp];
+            voltage_SP_for_single_stimulus = [voltage_SP_for_single_stimulus, v_sp];
             
+            g_t_S3 = cat(2, g_t_S1, g_t_S2);
+            g_t_D3 = cat(2, g_t_D1, g_t_D2);
 
-        end % end of for 1:1800
+
+          
+            [not_needed_variable spike_train_SP_indiv_stimulus] = decrease_voltage_for_20ms_after_spike(voltage_SP_for_single_stimulus);
+            g_sp = get_g_t(spike_train_SP_indiv_stimulus);
+            g_sp = g_sp(1,1:300);
+            
+            v_l4 = weight_S_to_L4* shift_1(g_t_S3).*shift_1(spike_for_S_for_single_stimulus) + weight_D_to_L4*shift_1(g_t_D3).*shift_1(spike_for_D_for_single_stimulus) + weight_SP_to_L4*shift_1(g_sp).*shift_1(spike_train_SP_indiv_stimulus);
+            voltage_L4 = [voltage_L4, v_l4];
+        end % end of for all stimulus
 
         [v_sp_modified, spike_train_for_SP] = decrease_voltage_for_20ms_after_spike(voltage_SP);
         for k=1:length(v_sp_modified)
             v_sp_modified(1,i) = v_sp_modified(1,i) * 0.9;
         end
 
-        figure(1)
-            plot(v_sp_modified);
+        [v_l4_modified, spike_train_for_L4] = decrease_voltage_for_20ms_after_spike(voltage_L4);
+        for k=1:length(v_l4_modified)
+            v_l4_modified(1,i) = v_l4_modified(1,i) * 0.9;
+        end
+
+        figure(3)
+            subplot(2, 1, 1)
+            plot(v_l4_modified)
+            title('v L4')
+            
+            subplot(2, 1, 2)
+            plot(spike_train_for_L4)
+            title('spikes L4')
         grid
 
-        figure(2)
-            plot(spike_train_for_SP);
+
+        figure(1)
+            subplot(2, 1, 1)
+            plot(v_sp_modified)
+            title('v_sp_modified')
+            
+            subplot(2, 1, 2)
+            plot(spike_train_for_SP)
+            title('spike_train_for_SP')
         grid
+
+        
+
+        
+
 
 end % end of project
 
