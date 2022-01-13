@@ -17,7 +17,7 @@ function project
         voltage_SP = [];
         voltage_L4 = [];
 
-        % for S,D,SP4 neuron
+        % for S,D,SP4 neuron - synaptic resources
         S_xe = [];
         S_xe = [S_xe, 0];
         S_xi = [];
@@ -50,13 +50,10 @@ function project
             spike_for_S_for_single_stimulus = [];
             spike_for_D_for_single_stimulus = [];
 
-            
             s_xe_trimmed_for_single_stimulus = [];
             d_xe_trimmed_for_single_stimulus = [];
-            stimulus_decider = randi([1,100]);
-            spike_train_of_thalamus_S = [];
-            spike_train_of_thalamus_D = [];
 
+            stimulus_decider = randi([1,100]);
 
             if stimulus_decider >= 90
                 % Deviant stimulus
