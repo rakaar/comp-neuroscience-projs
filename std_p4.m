@@ -34,9 +34,9 @@ function project
         D_xr = [D_xr, 1];
 
         SP_xe = [];
-        SP_xe = [ SP_xe, 0];
+        SP_xe = [SP_xe, 0];
         SP_xi = [];
-        SP_xi = [ SP_xi, 0];
+        SP_xi = [SP_xi, 0];
         SP_xr = [];
         SP_xr = [SP_xr, 1];
 
@@ -44,7 +44,7 @@ function project
         thalamus_tau_re = 0.9; thalamus_tau_ei=10; thalamus_tau_ir=5000;
         sp_tau_re = 0.9; sp_tau_ei = 27; sp_tau_ir = 5000;
 
-        for i=1:5400 % 3 mins
+        for i=1:1800 % 3 mins
 
             voltage_SP_for_single_stimulus = [];
             spike_for_S_for_single_stimulus = [];
