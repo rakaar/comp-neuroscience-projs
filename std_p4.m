@@ -8,6 +8,15 @@ function project
         weight_S_to_L4 = 0.02;
         weight_D_to_L4 = 0.02;
 
+        weights_arr_S_to_L4 = [];
+        weights_arr_S_to_L4 = [weights_arr_S_to_L4, weight_S_to_L4];
+
+        weights_arr_D_to_L4 = [];
+        weights_arr_D_to_L4 = [weights_arr_D_to_L4, weight_D_to_L4];
+
+        weights_arr_SP_to_L4 = [];
+        weights_arr_SP_to_L4 = [weights_arr_SP_to_L4, weight_SP_to_L4];
+
         a_LTP = 0.015;
         tau_LTP = 13;
 
@@ -44,7 +53,7 @@ function project
         thalamus_tau_re = 0.9; thalamus_tau_ei=10; thalamus_tau_ir=5000;
         sp_tau_re = 0.9; sp_tau_ei = 27; sp_tau_ir = 5000;
 
-        for i=1:1800 % 3 mins
+        for i=1:18000 % 3 mins
 
             voltage_SP_for_single_stimulus = [];
             spike_for_S_for_single_stimulus = [];
@@ -206,6 +215,41 @@ function project
             sp_xe_trimmed = SP_xe(1, length(SP_xe)-299:length(SP_xe));
             v_l4 = weight_S_to_L4* shift_1(g_t_S3).*shift_1(spike_for_S_for_single_stimulus).*s_xe_trimmed_for_single_stimulus + weight_D_to_L4*shift_1(g_t_D3).*shift_1(spike_for_D_for_single_stimulus).*d_xe_trimmed_for_single_stimulus + weight_SP_to_L4*shift_1(g_sp).*shift_1(spike_train_SP_indiv_stimulus).*sp_xe_trimmed;
             voltage_L4 = [voltage_L4, v_l4];
+
+
+            [not_needed_variable spike_train_L4_indiv_stimulus] = decrease_voltage_for_20ms_after_spike(v_l4);
+            
+            % weights of S to L4
+            weight_S_to_L4 = update_weight(weight_S_to_L4, spike_for_S_for_single_stimulus, spike_train_L4_indiv_stimulus);
+            if weight_S_to_L4 < 0.001
+                weight_S_to_L4 = 0.001;
+            end
+            if weight_S_to_L4 > 0.4
+                weight_S_to_L4 = 0.4;
+            end 
+            weights_arr_S_to_L4 = [weights_arr_S_to_L4, weight_S_to_L4];
+
+            % weight of D to L4
+            weight_D_to_L4 = update_weight(weight_D_to_L4, spike_for_D_for_single_stimulus, spike_train_L4_indiv_stimulus);
+            if weight_D_to_L4 < 0.001
+                weight_D_to_L4 = 0.001;
+            end
+            if weight_D_to_L4 > 0.4
+                weight_D_to_L4 = 0.4;
+            end 
+            weights_arr_D_to_L4 = [weights_arr_D_to_L4, weight_D_to_L4];
+
+            % weight of SP to L4
+            weight_SP_to_L4 = update_weight(weight_SP_to_L4, spike_train_SP_indiv_stimulus, spike_train_L4_indiv_stimulus);
+            if weight_SP_to_L4 < 0.001
+                weight_SP_to_L4 = 0.001;
+            end
+            if weight_SP_to_L4 > 0.11
+                weight_SP_to_L4 = 0.11;
+            end 
+            weights_arr_SP_to_L4 = [weights_arr_SP_to_L4, weight_SP_to_L4];
+
+
         end % end of for all stimulus
 
         [v_sp_modified, spike_train_for_SP] = decrease_voltage_for_20ms_after_spike(voltage_SP);
@@ -218,6 +262,21 @@ function project
             v_l4_modified(1,i) = v_l4_modified(1,i) * 0.9;
         end
 
+        figure(40)
+            subplot(1,3, 1)
+            plot(weights_arr_S_to_L4)
+            title('weights S to L4')
+
+            subplot(1,3, 2)
+            plot(weights_arr_D_to_L4)
+            title('weights D to L4')
+
+
+            subplot(1,3, 3)
+            plot(weights_arr_SP_to_L4)
+            title('weights SP to L4')
+        grid
+        
         figure(4)
             subplot(3,1,1)
             plot(S_xe);
@@ -259,6 +318,40 @@ function project
 
 
 end % end of project
+
+function new_weight = update_weight(current_weight, pre_syn_spike, post_syn_spike)
+    for i=1:length(pre_syn_spike)
+        if pre_syn_spike(1,i) == 1
+            found_strong = 0;
+            % check for strength
+            for j=i+1:i+20
+                if j <= length(post_syn_spike)
+                    if post_syn_spike(1,j) == 1
+                        current_weight = current_weight*(1 + a_LTP*exp(-(j-i)/tau_LTP));
+                        found_strong = 1;
+                        break;
+                    end
+                end
+            end
+
+            % check for weak if strong not found
+            if found_strong == 0
+                for j=i-20:i-1
+                    if j >= 1
+                        if post_syn_spike(1,j) == 1
+                            current_weight = current_weight*(1 - a_LTD*exp((j-i)/tau_LTD));
+                            break;
+                        end
+                    end
+                end
+            end
+
+        end
+    end
+
+    new_weight = current_weight;
+
+end
 
 function spike_train = non_homo_poison(spike_rate, period)
     data = zeros(1, period);
