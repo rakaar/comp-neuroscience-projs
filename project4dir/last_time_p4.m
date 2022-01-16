@@ -6,9 +6,10 @@ function project
 
     % all variables
     stimulus = []; % 1 for deviant, 0 for Standard
-    voltage_S = []; spikes_S = [];
+    voltage_S = []; spikes_S = []; 
     voltage_D = []; spikes_D = [];
-    voltage_SP = []; spikes_SP = [];
+    voltage_SP = []; spikes_SP = []; calculated_voltage_SP = [];
+    voltage_L4 = []; spikes_L4 = []; calculated_voltage_L4 = [];
 
     % resources
     S_xr = []; S_xe = []; S_xi = [];
@@ -22,7 +23,7 @@ function project
 
 
     thalamus_tau_re = 0.9; thalamus_tau_ei = 10; thalamus_tau_ir = 5000;
-    tau_SP_re = 0.9; tau_SP_ei = 27; tau_SP_ir = 5000;
+    SP_tau_re = 0.9; SP_tau_ei = 27; SP_tau_ir = 5000;
     % voltage_L4 = []; spikes_L4 = [];
    
     NUMBER_OF_ITERS = 900;
@@ -53,13 +54,13 @@ function project
         g_t_D_50ms = g_t_D_50ms(1,1:50);
 
         % resources depletion for S and D
-        for i=1:50
+        for r=1:50
             Ms = 0; Md = 0;
-            if spikes_S_50ms(1,i) == 1
+            if spikes_S_50ms(1,r) == 1
                 Ms = 1;
             end
 
-            if spikes_D_50ms(1,i) == 1
+            if spikes_D_50ms(1,r) == 1
                 Md = 1;
             end
             % for S 
@@ -103,13 +104,13 @@ function project
         g_t_D_250ms = g_t_D_250ms(1,1:250);
 
         % resources depletion for S and D
-        for i=1:250
+        for r=1:250
             Ms = 0; Md = 0;
-            if spikes_S_250ms(1,i) == 1
+            if spikes_S_250ms(1,r) == 1
                 Ms = 1;
             end
 
-            if spikes_D_250ms(1,i) == 1
+            if spikes_D_250ms(1,r) == 1
                 Md = 1;
             end
             % for S 
@@ -137,11 +138,70 @@ function project
         voltage_SP_250ms = weight_S_to_SP*shift_1(g_t_S_250ms).*shift_1(spikes_S_250ms).*S_xe_trimmed_250ms  + weight_D_to_SP*shift_1(g_t_D_250ms).*shift_1(spikes_D_250ms).*D_xe_trimmed_250ms;
         voltage_SP = [voltage_SP, voltage_SP_250ms];
 
+        % to calculate L4 neurons effect on this training period
+        % we need spikes of S,D,SP for 300 ms
+        voltage_SP_300ms = [];
+        voltage_SP_300ms = [voltage_SP_300ms, voltage_SP_50ms];
+        voltage_SP_300ms = [voltage_SP_300ms, voltage_SP_250ms];
+        [calculated_voltage_SP_300ms spikes_SP_300ms] = calculate_voltage_and_spikes(voltage_SP_300ms);
+        % for later
+        voltage_SP = [voltage_SP, voltage_SP_300ms]; 
+        spikes_SP = [spikes_SP, spikes_SP_300ms];
+        calculated_voltage_SP = [calculated_voltage_SP, calculated_voltage_SP_300ms];
+        
+        % resource depletion of SP
+        for r=1:300
+            Msp = 0;
+            if spikes_SP_300ms(1,r) == 1
+                Msp = 1;
+            end
 
+            current_SP_xe = SP_xe(1, length(SP_xe));
+            current_SP_xr = SP_xr(1, length(SP_xr));
+            current_SP_xi = SP_xi(1, length(SP_xi));
+
+            SP_xr = [SP_xr, update_xr(Msp, current_SP_xr, current_SP_xi, SP_tau_re, SP_tau_ir)];
+            SP_xe = [SP_xe, update_xe(Msp, current_SP_xr, current_SP_xe, SP_tau_re, SP_tau_ei)];
+            SP_xi = [SP_xi, update_xi(current_SP_xe, current_SP_xi, SP_tau_ei, SP_tau_ir)];
+        end
+        
+        % kernels
+        g_t_SP_300ms = get_g_t(spikes_SP_300ms);
+        g_t_SP_300ms = g_t_SP_300ms(1,1:300);
+        g_t_S_300ms = []; g_t_S_300ms = [g_t_S_300ms, g_t_S_50ms];g_t_S_300ms = [g_t_S_300ms, g_t_S_250ms];
+        g_t_D_300ms = [];g_t_D_300ms = [g_t_D_300ms, g_t_D_50ms];g_t_D_300ms = [g_t_D_300ms, g_t_D_250ms];
+       
+        spikes_S_300ms = []; spikes_S_300ms = [spikes_S_300ms, spikes_S_50ms]; spikes_S_300ms = [spikes_S_300ms, spikes_S_250ms];
+        spikes_D_300ms = []; spikes_D_300ms = [spikes_D_300ms, spikes_D_50ms];spikes_D_300ms = [spikes_D_300ms, spikes_D_250ms];
+
+        S_xe_trimmed_300ms = [];S_xe_trimmed_300ms = [S_xe_trimmed_300ms, S_xe_trimmed_50ms]; S_xe_trimmed_300ms = [S_xe_trimmed_300ms, S_xe_trimmed_250ms];
+        D_xe_trimmed_300ms = [];D_xe_trimmed_300ms = [D_xe_trimmed_300ms, D_xe_trimmed_50ms]; D_xe_trimmed_300ms = [D_xe_trimmed_300ms, D_xe_trimmed_250ms];
+        SP_xe_trimmed_300ms = SP_xe(1,length(SP_xe)-299:length(SP_xe));
+        
+        voltage_L4_300ms = weight_S_to_L4.*shift_1(g_t_S_300ms).*shift_1(spikes_S_300ms).*S_xe_trimmed_300ms  ...
+                            + weight_D_to_L4.*shift_1(g_t_D_300ms).*shift_1(spikes_D_300ms).*D_xe_trimmed_300ms ...
+                            + weight_SP_to_L4.*shift_1(g_t_SP_300ms).*shift_1(spikes_SP_300ms).*SP_xe_trimmed_300ms;
+        [calculated_voltage_L4_300ms spikes_L4_300ms] = calculate_voltage_and_spikes(voltage_L4_300ms);
+
+        voltage_L4 = [voltage_L4, voltage_L4_300ms];
+        spikes_L4 = [spikes_L4, spikes_L4_300ms];
+        calculated_voltage_L4 = [calculated_voltage_L4, calculated_voltage_L4_300ms];
     end % -------------- END OF STIMULUS --------
 
+    figure(3)
+        subplot(3, 1, 1)
+        plot(voltage_L4);
+        title('raw voltage L4');
 
-    [calculated_voltage_SP spikes_SP] = calculate_voltage_and_spikes(voltage_SP); 
+        subplot(3, 1, 2)
+        plot(spikes_L4);
+        title('spikes L4')
+
+        subplot(3, 1, 3)
+        plot(calculated_voltage_L4);
+        title('calculated voltage L4');
+    grid
+    
     figure(1)
         subplot(3, 1, 1)
         plot(voltage_SP);
@@ -208,7 +268,6 @@ function [calculated_voltage spikes] = calculate_voltage_and_spikes(original_vol
     while i <= length(calculated_voltage)
         if calculated_voltage(1,i) >= threshold
             spikes(1,i) = 1;
-            disp(i);
             t_spike = i;
             for j=i:i+19
                 if j <= length(calculated_voltage)
