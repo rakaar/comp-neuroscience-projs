@@ -11,6 +11,10 @@ function project
     voltage_SP = []; spikes_SP = []; calculated_voltage_SP = [];
     voltage_L4 = []; spikes_L4 = []; calculated_voltage_L4 = [];
 
+    % epsc
+    epsc_S_to_SP = []; epsc_D_to_SP = [];
+    epsc_S_to_L4 = []; epsc_D_to_L4 = []; epsc_SP_to_L4 = [];
+
     % resources
     S_xr = []; S_xe = []; S_xi = [];
     D_xr = []; D_xe = []; D_xi = [];
@@ -26,9 +30,9 @@ function project
     SP_tau_re = 0.9; SP_tau_ei = 27; SP_tau_ir = 5000;
     % voltage_L4 = []; spikes_L4 = [];
    
-    NUMBER_OF_ITERS = 900;
+    NUMBER_OF_ITERS = 600;
     for i=1:NUMBER_OF_ITERS
-
+        fprintf("iter num %d\n", i)
         % first 50 ms stimulus - S or D
         stimulus_decider = randi([1,100]);
         if stimulus_decider >= 90
@@ -87,7 +91,9 @@ function project
         % calculate voltage of SP 50ms
         voltage_SP_50ms = weight_S_to_SP*shift_1(g_t_S_50ms).*shift_1(spikes_S_50ms).*S_xe_trimmed_50ms  + weight_D_to_SP*shift_1(g_t_D_50ms).*shift_1(spikes_D_50ms).*D_xe_trimmed_50ms;
         voltage_SP = [voltage_SP, voltage_SP_50ms];
-
+        % epsc 50ms
+        epsc_S_to_SP = [epsc_S_to_SP, weight_S_to_SP*shift_1(g_t_S_50ms).*S_xe_trimmed_50ms];
+        epsc_D_to_SP = [epsc_D_to_SP, weight_D_to_SP*shift_1(g_t_D_50ms).*D_xe_trimmed_50ms];
 
         % for 250 ms gap
         spikes_S_250ms = non_homo_poison(0.5, 250);
@@ -137,7 +143,11 @@ function project
         % calculate voltage of SP 250ms
         voltage_SP_250ms = weight_S_to_SP*shift_1(g_t_S_250ms).*shift_1(spikes_S_250ms).*S_xe_trimmed_250ms  + weight_D_to_SP*shift_1(g_t_D_250ms).*shift_1(spikes_D_250ms).*D_xe_trimmed_250ms;
         voltage_SP = [voltage_SP, voltage_SP_250ms];
-
+        
+        % epsc SP 250ms
+        epsc_S_to_SP = [epsc_S_to_SP, weight_S_to_SP*shift_1(g_t_S_250ms).*S_xe_trimmed_250ms];
+        epsc_D_to_SP = [epsc_D_to_SP, weight_D_to_SP*shift_1(g_t_D_250ms).*D_xe_trimmed_250ms];
+        
         % to calculate L4 neurons effect on this training period
         % we need spikes of S,D,SP for 300 ms
         voltage_SP_300ms = [];
@@ -183,11 +193,39 @@ function project
                             + weight_SP_to_L4.*shift_1(g_t_SP_300ms).*shift_1(spikes_SP_300ms).*SP_xe_trimmed_300ms;
         [calculated_voltage_L4_300ms spikes_L4_300ms] = calculate_voltage_and_spikes(voltage_L4_300ms);
 
+        % epsc to l4
+        epsc_S_to_L4 = [epsc_S_to_L4, weight_S_to_L4.*shift_1(g_t_S_300ms).*S_xe_trimmed_300ms];
+        epsc_D_to_L4 = [epsc_D_to_L4, weight_D_to_L4.*shift_1(g_t_D_300ms).*D_xe_trimmed_300ms];
+        epsc_SP_to_L4 = [epsc_SP_to_L4, weight_SP_to_L4.*shift_1(g_t_SP_300ms).*SP_xe_trimmed_300ms];
+
+
         voltage_L4 = [voltage_L4, voltage_L4_300ms];
         spikes_L4 = [spikes_L4, spikes_L4_300ms];
         calculated_voltage_L4 = [calculated_voltage_L4, calculated_voltage_L4_300ms];
     end % -------------- END OF STIMULUS --------
 
+    figure(5)
+    subplot(2, 1, 1)
+        plot(epsc_S_to_SP);
+        title('epsc s to sp')
+    subplot(2, 1, 2)
+        plot(epsc_D_to_SP);
+        title('epsc d to sp')
+    grid
+
+
+    figure(7)
+    subplot(3, 1, 1)
+        plot(epsc_S_to_L4);
+        title('epsc s to L4')
+    subplot(3, 1, 2)
+        plot(epsc_D_to_L4);
+        title('epsc d to L4')
+    subplot(3, 1, 3)
+        plot(epsc_SP_to_L4);
+        title('epsc sp to L4')
+    grid
+    
     figure(3)
         subplot(3, 1, 1)
         plot(voltage_L4);
@@ -201,6 +239,7 @@ function project
         plot(calculated_voltage_L4);
         title('calculated voltage L4');
     grid
+    
     
     figure(1)
         subplot(3, 1, 1)
