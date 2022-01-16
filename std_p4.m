@@ -52,8 +52,27 @@ function project
         % tau values
         thalamus_tau_re = 0.9; thalamus_tau_ei=10; thalamus_tau_ir=5000;
         sp_tau_re = 0.9; sp_tau_ei = 27; sp_tau_ir = 5000;
+        
+        % variables for workspace 
+        stimulus = [];
 
-        for i=1:18000 % 3 mins
+        all_spikes_S = [];
+        all_spikes_D = [];
+        all_spikes_SP = [];
+
+        epsc_S_to_SP = [];
+        epsc_D_to_SP = [];
+
+        epsc_S_to_L4 = [];
+        epsc_D_to_L4 = [];
+        epsc_SP_to_L4 = [];
+
+        g_for_S = [];
+        g_for_D = [];
+        g_for_SP = [];
+
+
+        for i=1:900 % 3 mins
 
             voltage_SP_for_single_stimulus = [];
             spike_for_S_for_single_stimulus = [];
@@ -66,19 +85,17 @@ function project
 
             if stimulus_decider >= 90
                 % Deviant stimulus
-                spike_for_S = non_homo_poison(2.5, 1000);
-                spike_for_D = non_homo_poison(10, 1000);
+                spike_for_S = non_homo_poison(2.5, 50);
+                spike_for_D = non_homo_poison(10, 50);
+                stimulus = [stimulus, 1];
             else 
                 % Standard stimulus
-                spike_for_S = non_homo_poison(10, 1000);
-                spike_for_D = non_homo_poison(2.5, 1000);
+                spike_for_S = non_homo_poison(10, 50);
+                spike_for_D = non_homo_poison(2.5, 50);
+                stimulus = [stimulus, 0];
+
             end
 
-            % 50 ms stimulus
-            spike_for_S = spike_for_S(1,1:50);
-            spike_for_D = spike_for_D(1,1:50);
-
-         
             
             spike_for_S_for_single_stimulus = [spike_for_S_for_single_stimulus, spike_for_S];
             spike_for_D_for_single_stimulus = [spike_for_D_for_single_stimulus, spike_for_D];
@@ -91,6 +108,8 @@ function project
             g_t_D1 = g_t_D1(1,1:50);
 
             
+            g_for_S = [g_for_S, g_t_S1];
+            g_for_D = [g_for_D, g_t_D1];
             % synaptic resources for thalamic neurons
             for kkk=1:50
                 Ms = 0; Md = 0;
@@ -130,13 +149,15 @@ function project
             voltage_SP = [voltage_SP, v_sp];
             voltage_SP_for_single_stimulus = [voltage_SP_for_single_stimulus, v_sp];
 
+            epsc_S_to_SP = [epsc_S_to_SP, weight_S_to_SP*shift_1(g_t_S1).*s_xe_trimmed];
+            epsc_D_to_SP = [epsc_D_to_SP, weight_D_to_SP*shift_1(g_t_D1).*d_xe_trimmed];
 
             % 250 ms gap
-            spike_for_S = non_homo_poison(0.5, 1000);
-            spike_for_D = non_homo_poison(0.5, 1000);
+            spike_for_S = non_homo_poison(0.5, 250);
+            spike_for_D = non_homo_poison(0.5, 250);
 
-            spike_for_S = spike_for_S(1,1:250);
-            spike_for_D = spike_for_D(1,1:250);
+            % spike_for_S = spike_for_S(1,1:250);
+            % spike_for_D = spike_for_D(1,1:250);
 
             spike_for_S_for_single_stimulus = [spike_for_S_for_single_stimulus, spike_for_S];
             spike_for_D_for_single_stimulus = [spike_for_D_for_single_stimulus, spike_for_D];
@@ -175,6 +196,11 @@ function project
             g_t_S2 = g_t_S2(1,1:250);
             g_t_D2 = g_t_D2(1,1:250);
             
+            
+
+            g_for_S = [g_for_S, g_t_S2];
+            g_for_D = [g_for_D, g_t_D2];
+
             s_xe_trimmed = S_xe(1,length(S_xe)-249:length(S_xe));
             d_xe_trimmed = D_xe(1, length(D_xe)-249:length(D_xe));
 
@@ -187,15 +213,21 @@ function project
             voltage_SP = [voltage_SP, v_sp];
             voltage_SP_for_single_stimulus = [voltage_SP_for_single_stimulus, v_sp];
             
-            g_t_S3 = cat(2, g_t_S1, g_t_S2);
-            g_t_D3 = cat(2, g_t_D1, g_t_D2);
+            epsc_S_to_SP = [epsc_S_to_SP, weight_S_to_SP*shift_1(g_t_S2).*s_xe_trimmed];
+            epsc_D_to_SP = [epsc_D_to_SP, weight_D_to_SP*shift_1(g_t_D2).*d_xe_trimmed];
 
+            % g_t_S3 = cat(2, g_t_S1, g_t_S2);
+            % g_t_D3 = cat(2, g_t_D1, g_t_D2);
 
+            g_t_S3 = []; g_t_D3 = [];
+            g_t_S3 = [g_t_S3, g_t_S1]; g_t_S3 = [g_t_S3, g_t_S2];
+            g_t_D3 = [g_t_D3, g_t_D1]; g_t_D3 = [g_t_D3, g_t_D2];
           
             [not_needed_variable spike_train_SP_indiv_stimulus] = decrease_voltage_for_20ms_after_spike(voltage_SP_for_single_stimulus);
             g_sp = get_g_t(spike_train_SP_indiv_stimulus);
             g_sp = g_sp(1,1:300);
             
+            g_for_SP = [g_for_SP, g_sp];
             % synaptic resources for SP
             for kkk=1:300
                 Msp = 0;
@@ -216,42 +248,53 @@ function project
             v_l4 = weight_S_to_L4* shift_1(g_t_S3).*shift_1(spike_for_S_for_single_stimulus).*s_xe_trimmed_for_single_stimulus + weight_D_to_L4*shift_1(g_t_D3).*shift_1(spike_for_D_for_single_stimulus).*d_xe_trimmed_for_single_stimulus + weight_SP_to_L4*shift_1(g_sp).*shift_1(spike_train_SP_indiv_stimulus).*sp_xe_trimmed;
             voltage_L4 = [voltage_L4, v_l4];
 
+            epsc_S_to_L4 = [epsc_S_to_L4, weight_S_to_L4* shift_1(g_t_S3).*s_xe_trimmed_for_single_stimulus];
+            epsc_D_to_L4 = [epsc_D_to_L4, weight_D_to_L4*shift_1(g_t_D3).*d_xe_trimmed_for_single_stimulus];
+            epsc_SP_to_L4 = [epsc_SP_to_L4, weight_SP_to_L4*shift_1(g_sp).*sp_xe_trimmed];
 
             [not_needed_variable spike_train_L4_indiv_stimulus] = decrease_voltage_for_20ms_after_spike(v_l4);
             
+            % for now, no weight updates --------------
             % weights of S to L4
-            weight_S_to_L4 = update_weight(weight_S_to_L4, spike_for_S_for_single_stimulus, spike_train_L4_indiv_stimulus);
-            if weight_S_to_L4 < 0.001
-                weight_S_to_L4 = 0.001;
-            end
-            if weight_S_to_L4 > 0.4
-                weight_S_to_L4 = 0.4;
-            end 
-            weights_arr_S_to_L4 = [weights_arr_S_to_L4, weight_S_to_L4];
+            % weight_S_to_L4 = update_weight(weight_S_to_L4, spike_for_S_for_single_stimulus, spike_train_L4_indiv_stimulus);
+            % if weight_S_to_L4 < 0.001
+            %     weight_S_to_L4 = 0.001;
+            % end
+            % if weight_S_to_L4 > 0.4
+            %     weight_S_to_L4 = 0.4;
+            % end 
+            % weights_arr_S_to_L4 = [weights_arr_S_to_L4, weight_S_to_L4];
 
-            % weight of D to L4
-            weight_D_to_L4 = update_weight(weight_D_to_L4, spike_for_D_for_single_stimulus, spike_train_L4_indiv_stimulus);
-            if weight_D_to_L4 < 0.001
-                weight_D_to_L4 = 0.001;
-            end
-            if weight_D_to_L4 > 0.4
-                weight_D_to_L4 = 0.4;
-            end 
-            weights_arr_D_to_L4 = [weights_arr_D_to_L4, weight_D_to_L4];
+            % % weight of D to L4
+            % weight_D_to_L4 = update_weight(weight_D_to_L4, spike_for_D_for_single_stimulus, spike_train_L4_indiv_stimulus);
+            % if weight_D_to_L4 < 0.001
+            %     weight_D_to_L4 = 0.001;
+            % end
+            % if weight_D_to_L4 > 0.4
+            %     weight_D_to_L4 = 0.4;
+            % end 
+            % weights_arr_D_to_L4 = [weights_arr_D_to_L4, weight_D_to_L4];
 
-            % weight of SP to L4
-            weight_SP_to_L4 = update_weight(weight_SP_to_L4, spike_train_SP_indiv_stimulus, spike_train_L4_indiv_stimulus);
-            if weight_SP_to_L4 < 0.001
-                weight_SP_to_L4 = 0.001;
-            end
-            if weight_SP_to_L4 > 0.11
-                weight_SP_to_L4 = 0.11;
-            end 
-            weights_arr_SP_to_L4 = [weights_arr_SP_to_L4, weight_SP_to_L4];
+            % % weight of SP to L4
+            % weight_SP_to_L4 = update_weight(weight_SP_to_L4, spike_train_SP_indiv_stimulus, spike_train_L4_indiv_stimulus);
+            % if weight_SP_to_L4 < 0.001
+            %     weight_SP_to_L4 = 0.001;
+            % end
+            % if weight_SP_to_L4 > 0.11
+            %     weight_SP_to_L4 = 0.11;
+            % end 
+            % weights_arr_SP_to_L4 = [weights_arr_SP_to_L4, weight_SP_to_L4];
 
+        all_spikes_S = [all_spikes_S, spike_for_S_for_single_stimulus];
+
+        % collecting spikes
+        all_spikes_S = [all_spikes_S, spike_for_S_for_single_stimulus];
+        all_spikes_D = [all_spikes_D, spike_for_D_for_single_stimulus];
+        all_spikes_SP = [all_spikes_SP, spike_train_SP_indiv_stimulus];
 
         end % end of for all stimulus
-
+% ------------------------------END OF STIMULS -------------------------------
+        
         [v_sp_modified, spike_train_for_SP] = decrease_voltage_for_20ms_after_spike(voltage_SP);
         for k=1:length(v_sp_modified)
             v_sp_modified(1,i) = v_sp_modified(1,i) * 0.9;
@@ -261,6 +304,72 @@ function project
         for k=1:length(v_l4_modified)
             v_l4_modified(1,i) = v_l4_modified(1,i) * 0.9;
         end
+
+        figure(3456)
+            subplot(3,1,1)
+            plot(g_for_S);
+            title('g for S');
+
+            subplot(3,1,2)
+            plot(g_for_D);
+            title('g for D');
+
+            subplot(3,1,3)
+            plot(g_for_SP);
+            title('g for SP');
+        grid
+
+        figure(5456)
+            subplot(2,1,1)
+            plot(voltage_SP);
+            title('voltage SP')
+
+            subplot(2,1,2)
+            plot(v_sp_modified);
+            title('voltage sp modifed')
+        grid
+
+        figure(100)
+            subplot(3,1,1)
+            plot(epsc_S_to_L4)
+            title('epsc s to l4')
+
+            subplot(3,1,2)
+            plot(epsc_D_to_L4)
+            title('epsc d to l4')
+
+            subplot(3,1,3)
+            plot(epsc_SP_to_L4)
+            title('epsc sp to l4')
+        grid
+
+        figure(200)
+            subplot(2,1,1)
+            plot(epsc_S_to_SP)
+            title('epsc s to sp')
+
+            subplot(2, 1, 2)
+            plot(epsc_D_to_SP)
+            title('epsc d to sp')
+        grid
+
+        figure(300)
+            subplot(4,1,1)
+            plot(all_spikes_S)
+            title('s spike')
+
+            subplot(4,1,2)
+            plot(all_spikes_D)
+            title('d spike')
+
+            subplot(4,1,3)
+            plot(all_spikes_SP)
+            title('sp spike')
+
+            subplot(4, 1, 4)
+            plot(spike_train_for_SP)
+            title('sp spike 222')
+        grid
 
         figure(40)
             subplot(1,3, 1)
@@ -318,6 +427,7 @@ function project
 
 
 end % end of project
+
 
 function new_weight = update_weight(current_weight, pre_syn_spike, post_syn_spike)
     for i=1:length(pre_syn_spike)
